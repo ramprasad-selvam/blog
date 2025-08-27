@@ -110,7 +110,7 @@ export default function ContactPage() {
     <div className="contact-container">
       <div className="contact-header">
         <h1>Get in Touch</h1>
-        <p className="intro">Have a project in mind, or just want to say hi? Fill out the form below or reach me directly at <a href="mailto:yourmail@gmail.com">yourmail@gmail.com</a>.</p>
+        <p className="intro">Have something in mind or just want to chat? Reach out using the form below or email me at <a href="mailto:ramprasadselvam@gmail.com">ramprasadselvam@gmail.com</a>.</p>
       </div>
 
       <form className="contact-form" onSubmit={handleSubmit} noValidate>
