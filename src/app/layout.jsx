@@ -1,3 +1,4 @@
+import { SpeedInsights } from "@vercel/speed-insights/next"
 import "./globals.css"
 import { Roboto } from "next/font/google"
 
@@ -11,6 +12,7 @@ export default function RootLayout({ children }) {
     <html lang="en">
       <body className={roboto.className}>
         {children}
+        <SpeedInsights />
       </body>
     </html>
   )
