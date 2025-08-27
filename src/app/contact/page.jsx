@@ -18,8 +18,8 @@ export default function ContactPage() {
     if (!form.message.trim()) newErrors.message = "Message is required";
     
     // File validation (optional)
-    if (form.file && form.file.size > 20 * 1024 * 1024) {
-      newErrors.file = "File size must be less than 20MB";
+    if (form.file && form.file.size > 5 * 1024 * 1024) {
+      newErrors.file = "File size must be less than 5MB";
     }
     
     return newErrors;
