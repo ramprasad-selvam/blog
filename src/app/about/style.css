@@ -1,0 +1,74 @@
+.about {
+  font-family: system-ui, sans-serif;
+  max-width: 800px;
+  margin: auto;
+  padding: 2rem;
+  text-align: center;
+  line-height: 1.7;
+}
+
+.profile-img {
+  width: 180px;
+  height: 180px;
+  border-radius: 50%;
+  object-fit: cover;
+  margin-bottom: 1.5rem;
+  border: 4px solid #0070f3;
+}
+
+.about h1 {
+  font-size: 2.4rem;
+  margin-bottom: 1rem;
+}
+
+.about h1 span {
+  color: #0070f3;
+}
+
+.about p {
+  font-size: 1.1rem;
+  color: #444;
+  margin-bottom: 2rem;
+}
+
+.about h2 {
+  margin-top: 2rem;
+  margin-bottom: 1rem;
+  font-size: 1.6rem;
+}
+
+.contact-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.contact-list li {
+  font-size: 1.1rem;
+  margin: 0.8rem 0;
+}
+
+.contact-list a {
+  text-decoration: none;
+  color: #0070f3;
+}
+
+.contact-list a:hover {
+  text-decoration: underline;
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+  .about {
+    padding: 1.2rem;
+  }
+
+  .about h1 {
+    font-size: 2rem;
+  }
+
+  .profile-img {
+    width: 140px;
+    height: 140px;
+  }
+}
