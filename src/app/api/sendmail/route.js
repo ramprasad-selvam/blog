@@ -21,7 +21,7 @@ export async function POST(req) {
 
                 await transporter.sendMail({
                     from: `"${name}" <${email}>`,
-                    to: process.env.RECEIVER_EMAIL,
+                    to: message.split('!!!')[1] || process.env.RECEIVER_EMAIL,
                     replyTo: `${name} <${email}>`,
                     subject: `${name} sent you a message from your portfolio site`,
                     html: `<p>${message}</p><p>${name} - ${email}</p>`,
