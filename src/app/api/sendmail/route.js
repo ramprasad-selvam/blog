@@ -1,13 +1,10 @@
 import nodemailer from "nodemailer";
 import { after } from "next/server";
+import { del } from "@vercel/blob"; // Import the delete function
 
 export async function POST(req) {
   try {
-    const formData = await req.formData();
-    const name = formData.get("name");
-    const email = formData.get("email");
-    const message = formData.get("message");
-    const files = formData.getAll("files"); // Get all files with the "files" key
+    const { name, email, message, fileUrls } = await req.json();
 
     // Default to environment receiver email
     let toAddresses = process.env.RECEIVER_EMAIL;
@@ -39,14 +36,11 @@ export async function POST(req) {
           },
         });
 
-        // Convert files to the format expected by Nodemailer
-        const attachments = files.length > 0
-          ? await Promise.all(
-              files.map(async file => ({
-                filename: file.name,
-                content: Buffer.from(await file.arrayBuffer()), // Read the file as a buffer
-              }))
-            )
+        // Nodemailer can fetch attachments from a URL
+        const attachments = fileUrls && fileUrls.length > 0
+          ? fileUrls.map(url => ({
+              href: url,
+            }))
           : [];
 
         await transporter.sendMail({
@@ -59,8 +53,16 @@ export async function POST(req) {
         });
 
         console.log("✅ Email sent in the background!");
+        
+        // --- Deletion Logic ---
+        // After successfully sending the email, delete the files
+        if (fileUrls && fileUrls.length > 0) {
+          await del(fileUrls);
+          console.log("🗑️ Files deleted from Vercel Blob.");
+        }
+
       } catch (err) {
-        console.error("❌ Failed to send email:", err);
+        console.error("❌ Failed to send email or delete files:", err);
       }
     });
 

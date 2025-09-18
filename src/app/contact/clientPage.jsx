@@ -1,6 +1,7 @@
 'use client';
 import "./style.css";
 import { useState, useRef } from "react";
+import { upload } from "@vercel/blob/client";
 
 export default function ContactPage() {
   const [form, setForm] = useState({ name: "", email: "", message: "" });
@@ -26,9 +27,6 @@ export default function ContactPage() {
     }
 
     if (!form.message.trim()) newErrors.message = "Message is required";
-
-    const totalSize = files.reduce((sum, file) => sum + file.size, 0);
-    if (totalSize > 4.5 * 1024 * 1024) newErrors.files = "Total file size must be less than 4.5MB";
 
     return newErrors;
   };
@@ -76,18 +74,29 @@ export default function ContactPage() {
     setIsSubmitting(true);
 
     try {
-      const formData = new FormData();
-      formData.append("name", form.name);
-      formData.append("email", form.email);
-      formData.append("message", form.message);
+      const fileUrls = [];
+      if (files.length > 0) {
+        setStatus("Uploading files...");
+        const uploadPromises = files.map(file =>
+          upload(file.name, file, {
+            access: "public",
+            handleUploadUrl: "/api/upload",
+          })
+        );
+        const uploadedBlobs = await Promise.all(uploadPromises);
+        fileUrls.push(...uploadedBlobs.map(blob => blob.url));
+      }
 
-      files.forEach((file, idx) => {
-        formData.append("files", file, file.name);
-      });
-
+      setStatus("Sending message...");
       const res = await fetch("/api/sendmail", {
         method: "POST",
-        body: formData,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: form.name,
+          email: form.email,
+          message: form.message,
+          fileUrls: fileUrls,
+        }),
       });
 
       if (res.ok) {
@@ -113,7 +122,6 @@ export default function ContactPage() {
     <main className="container">
       <div className="contact-container">
         <h1>Get in Touch</h1>
-
         <form className="contact-form" onSubmit={handleSubmit} noValidate>
           <div className="form-group">
             <input
@@ -127,7 +135,6 @@ export default function ContactPage() {
             <label htmlFor="name">Your Name</label>
             {errors.name && <span className="error">{errors.name}</span>}
           </div>
-
           <div className="form-group">
             <input
               type="text"
@@ -140,7 +147,6 @@ export default function ContactPage() {
             <label htmlFor="email">Email or Phone Number</label>
             {errors.email && <span className="error">{errors.email}</span>}
           </div>
-
           <div className="form-group">
             <textarea
               name="message"
@@ -153,7 +159,6 @@ export default function ContactPage() {
             <label htmlFor="message">Your Message</label>
             {errors.message && <span className="error">{errors.message}</span>}
           </div>
-
           <div className="file-section">
             <label className="file-upload-label">
               <div className={`file-upload ${errors.files ? "input-error" : ""}`}>
@@ -165,11 +170,10 @@ export default function ContactPage() {
                   ref={fileInputRef}
                 />
                 <div className="upload-text">
-                  {files.length > 0 ? `${files.length} file${files.length > 1 ? "s" : ""} selected` : "Click to upload files (max total size 4.5MB)"}
+                  {files.length > 0 ? `${files.length} file${files.length > 1 ? "s" : ""} selected` : "Click to upload files (no size limit)"}
                 </div>
               </div>
             </label>
-
             {files.length > 0 && (
               <div className="file-preview-list">
                 {files.map((file, idx) => (
@@ -182,15 +186,12 @@ export default function ContactPage() {
                 ))}
               </div>
             )}
-
             {errors.files && <span className="error">{errors.files}</span>}
           </div>
-
           <button type="submit" disabled={isSubmitting} className={`submit-btn ${isSubmitting ? "submitting" : ""}`}>
-            {isSubmitting ? "Sending..." : "Send Message"}
+            {isSubmitting ? status.split(' ')[0] + "..." : "Send Message"}
           </button>
         </form>
-
         {status && <div className={`status ${statusType}`}>{status}</div>}
       </div>
     </main>
