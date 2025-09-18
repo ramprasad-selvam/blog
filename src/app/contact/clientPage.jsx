@@ -3,12 +3,14 @@ import "./style.css";
 import { useState, useRef } from "react";
 
 export default function ContactPage() {
-  const [form, setForm] = useState({ name: "", email: "", message: "", file: null });
+  const [form, setForm] = useState({ name: "", email: "", message: "", files: [] });
   const [errors, setErrors] = useState({});
   const [status, setStatus] = useState("");
   const [statusType, setStatusType] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const fileInputRef = useRef(null);
+
+  // Updated validation to limit number of files only by total size (5MB), no max file count limit
 
   const validate = () => {
     const newErrors = {};
@@ -18,7 +20,7 @@ export default function ContactPage() {
       newErrors.email = "Email or phone number is required";
     } else {
       const isEmail = /^\S+@\S+\.\S+$/.test(form.email);
-      const isPhone = /^\+?\d{10,15}$/.test(form.email); // supports +countrycode and 10-15 digits
+      const isPhone = /^\+?\d{10,15}$/.test(form.email);
       if (!isEmail && !isPhone) {
         newErrors.email = "Enter a valid email or phone number";
       }
@@ -26,10 +28,14 @@ export default function ContactPage() {
 
     if (!form.message.trim()) newErrors.message = "Message is required";
 
-    // File validation (optional)
-    if (form.file && form.file.size > 5 * 1024 * 1024) {
-      newErrors.file = "File size must be less than 5MB";
-    }
+    // Remove max files count restriction
+    // Only limit total size to 5MB
+    const totalSize = form.files.reduce((sum, file) => sum + (file.size || 0), 0);
+    if (totalSize > 5 * 1024 * 1024) newErrors.files = "Total file size must be less than 5MB";
+
+    form.files.forEach(file => {
+      if (file.size > 5 * 1024 * 1024) newErrors.files = "Each file must be less than 5MB";
+    });
 
     return newErrors;
   };
@@ -38,49 +44,50 @@ export default function ContactPage() {
   const handleChange = (e) => {
     const { name, value } = e.target;
     setForm({ ...form, [name]: value });
-
-    // Clear error when user starts typing
-    if (errors[name]) {
-      setErrors({ ...errors, [name]: "" });
-    }
+    if (errors[name]) setErrors({ ...errors, [name]: "" });
   };
 
   const handleFileChange = (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
+    const files = Array.from(e.target.files);
+    if (files.length === 0) return;
 
-    // Clear file error
-    if (errors.file) {
-      setErrors({ ...errors, file: "" });
-    }
-
-    const reader = new FileReader();
-    reader.onload = () => {
-      const base64 = reader.result.split(",")[1];
-      setForm({ ...form, file: { name: file.name, data: base64, size: file.size } });
-    };
-    reader.readAsDataURL(file);
+    Promise.all(
+      files.map(file => new Promise(resolve => {
+        const reader = new FileReader();
+        reader.onload = () => {
+          const base64 = reader.result.split(",")[1];
+          resolve({ name: file.name, data: base64, size: file.size });
+        };
+        reader.readAsDataURL(file);
+      }))
+    ).then(base64Files => {
+      setForm(prev => ({ ...prev, files: base64Files }));
+      if (errors.files) setErrors({ ...errors, files: "" });
+    });
   };
 
-  const removeFile = () => {
-    setForm({ ...form, file: null });
-    if (fileInputRef.current) {
+  const removeFile = (index) => {
+    setForm(prev => {
+      const newFiles = [...prev.files];
+      newFiles.splice(index, 1);
+      return { ...prev, files: newFiles };
+    });
+    if (form.files.length === 1 && fileInputRef.current) {
       fileInputRef.current.value = "";
     }
+    if (errors.files) setErrors({ ...errors, files: "" });
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     const validationErrors = validate();
+
     if (Object.keys(validationErrors).length) {
       setErrors(validationErrors);
-
-      // Focus on first error field
+      setStatus("");
       const firstErrorField = Object.keys(validationErrors)[0];
       const element = document.querySelector(`[name="${firstErrorField}"]`);
       if (element) element.focus();
-
-      setStatus("");
       return;
     }
 
@@ -99,10 +106,8 @@ export default function ContactPage() {
       if (res.ok) {
         setStatus("✅ Message sent successfully! I'll get back to you soon.");
         setStatusType("success");
-        setForm({ name: "", email: "", message: "", file: null });
-        if (fileInputRef.current) {
-          fileInputRef.current.value = "";
-        }
+        setForm({ name: "", email: "", message: "", files: [] });
+        if (fileInputRef.current) fileInputRef.current.value = "";
       } else {
         const data = await res.json();
         setStatus("❌ Failed to send: " + (data.error || "Please try again later."));
@@ -121,7 +126,10 @@ export default function ContactPage() {
       <div className="contact-container">
         <div className="contact-header">
           <h1>Get in Touch</h1>
-          <p className="intro">Have something in mind or just want to chat? Reach out using the form below or email me at <a href="mailto:ramprasadselvam@gmail.com">ramprasadselvam@gmail.com</a>.</p>
+          <p className="intro">
+            Have something in mind or just want to chat? Reach out using the form below or email me at{" "}
+            <a href="mailto:ramprasadselvam@gmail.com">ramprasadselvam@gmail.com</a>.
+          </p>
         </div>
 
         <form className="contact-form" onSubmit={handleSubmit} noValidate>
@@ -151,12 +159,11 @@ export default function ContactPage() {
             {errors.email && <span className="error">{errors.email}</span>}
           </div>
 
-
           <div className="form-group">
             <textarea
               name="message"
               placeholder=" "
-              rows="5"
+              rows={5}
               value={form.message}
               onChange={handleChange}
               className={errors.message ? "input-error" : ""}
@@ -167,35 +174,69 @@ export default function ContactPage() {
 
           <div className="file-section">
             <label className="file-upload-label">
-              <div className={`file-upload ${errors.file ? "input-error" : ""}`}>
+              <div className={`file-upload ${errors.files ? "input-error" : ""}`}>
                 <div className="upload-icon">
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <svg
+                    width="24"
+                    height="24"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
                     <path d="M11 15H13V9H16L12 4L8 9H11V15Z" fill="currentColor" />
-                    <path d="M20 18H4V11H2V18C2 19.103 2.897 20 4 20H20C21.103 20 22 19.103 22 18V11H20V18Z" fill="currentColor" />
+                    <path
+                      d="M20 18H4V11H2V18C2 19.103 2.897 20 4 20H20C21.103 20 22 19.103 22 18V11H20V18Z"
+                      fill="currentColor"
+                    />
                   </svg>
                 </div>
-                <span>{form.file ? form.file.name : "Click to upload a file (optional)"}</span>
+                <span>
+                  {form.files.length > 0
+                    ? `${form.files.length} file${form.files.length > 1 ? "s" : ""} selected`
+                    : "Click to upload files (optional, max 5 files, total 5MB)"}
+                </span>
                 <input
                   type="file"
-                  name="file"
+                  name="files"
                   onChange={handleFileChange}
+                  multiple
                   ref={fileInputRef}
                 />
               </div>
             </label>
 
-            {form.file && (
-              <div className="file-preview">
-                <span>{form.file.name}</span>
-                <button type="button" onClick={removeFile} className="remove-file">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M6 18L18 6M6 6L18 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-                  </svg>
-                </button>
+            {form.files.length > 0 && (
+              <div className="file-preview-list">
+                {form.files.map((file, idx) => (
+                  <div key={idx} className="file-preview">
+                    <span>{file.name}</span>
+                    <button
+                      type="button"
+                      onClick={() => removeFile(idx)}
+                      className="remove-file"
+                      aria-label={`Remove ${file.name}`}
+                    >
+                      <svg
+                        width="16"
+                        height="16"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <path
+                          d="M6 18L18 6M6 6L18 18"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                        />
+                      </svg>
+                    </button>
+                  </div>
+                ))}
               </div>
             )}
 
-            {errors.file && <span className="error">{errors.file}</span>}
+            {errors.files && <span className="error">{errors.files}</span>}
           </div>
 
           <button
