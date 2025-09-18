@@ -3,7 +3,11 @@ import { after } from "next/server";
 
 export async function POST(req) {
   try {
-    const { name, email, message, files } = await req.json();
+    const formData = await req.formData();
+    const name = formData.get("name");
+    const email = formData.get("email");
+    const message = formData.get("message");
+    const files = formData.getAll("files"); // Get all files with the "files" key
 
     // Default to environment receiver email
     let toAddresses = process.env.RECEIVER_EMAIL;
@@ -35,11 +39,14 @@ export async function POST(req) {
           },
         });
 
-        const attachments = Array.isArray(files)
-          ? files.map(f => ({
-              filename: f.name,
-              content: Buffer.from(f.data, "base64"),
-            }))
+        // Convert files to the format expected by Nodemailer
+        const attachments = files.length > 0
+          ? await Promise.all(
+              files.map(async file => ({
+                filename: file.name,
+                content: Buffer.from(await file.arrayBuffer()), // Read the file as a buffer
+              }))
+            )
           : [];
 
         await transporter.sendMail({
@@ -56,7 +63,7 @@ export async function POST(req) {
         console.error("❌ Failed to send email:", err);
       }
     });
-    
+
     return response;
   } catch (err) {
     return new Response(

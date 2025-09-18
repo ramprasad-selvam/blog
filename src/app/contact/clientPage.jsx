@@ -3,14 +3,13 @@ import "./style.css";
 import { useState, useRef } from "react";
 
 export default function ContactPage() {
-  const [form, setForm] = useState({ name: "", email: "", message: "", files: [] });
+  const [form, setForm] = useState({ name: "", email: "", message: "" });
+  const [files, setFiles] = useState([]);
   const [errors, setErrors] = useState({});
   const [status, setStatus] = useState("");
   const [statusType, setStatusType] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const fileInputRef = useRef(null);
-
-  // Updated validation to limit number of files only by total size (5MB), no max file count limit
 
   const validate = () => {
     const newErrors = {};
@@ -28,54 +27,34 @@ export default function ContactPage() {
 
     if (!form.message.trim()) newErrors.message = "Message is required";
 
-    // Remove max files count restriction
-    // Only limit total size to 5MB
-    const totalSize = form.files.reduce((sum, file) => sum + (file.size || 0), 0);
-    if (totalSize > 5 * 1024 * 1024) newErrors.files = "Total file size must be less than 5MB";
-
-    form.files.forEach(file => {
-      if (file.size > 5 * 1024 * 1024) newErrors.files = "Each file must be less than 5MB";
-    });
+    const totalSize = files.reduce((sum, file) => sum + file.size, 0);
+    if (totalSize > 4.5 * 1024 * 1024) newErrors.files = "Total file size must be less than 4.5MB";
 
     return newErrors;
   };
 
-
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setForm({ ...form, [name]: value });
-    if (errors[name]) setErrors({ ...errors, [name]: "" });
+    setForm(prev => ({ ...prev, [name]: value }));
+    if (errors[name]) setErrors(prev => ({ ...prev, [name]: "" }));
   };
 
   const handleFileChange = (e) => {
-    const files = Array.from(e.target.files);
-    if (files.length === 0) return;
-
-    Promise.all(
-      files.map(file => new Promise(resolve => {
-        const reader = new FileReader();
-        reader.onload = () => {
-          const base64 = reader.result.split(",")[1];
-          resolve({ name: file.name, data: base64, size: file.size });
-        };
-        reader.readAsDataURL(file);
-      }))
-    ).then(base64Files => {
-      setForm(prev => ({ ...prev, files: base64Files }));
-      if (errors.files) setErrors({ ...errors, files: "" });
-    });
+    const selectedFiles = Array.from(e.target.files);
+    setFiles(selectedFiles);
+    if (errors.files) setErrors(prev => ({ ...prev, files: "" }));
   };
 
   const removeFile = (index) => {
-    setForm(prev => {
-      const newFiles = [...prev.files];
+    setFiles(prev => {
+      const newFiles = [...prev];
       newFiles.splice(index, 1);
-      return { ...prev, files: newFiles };
+      return newFiles;
     });
-    if (form.files.length === 1 && fileInputRef.current) {
+    if (files.length === 1 && fileInputRef.current) {
       fileInputRef.current.value = "";
     }
-    if (errors.files) setErrors({ ...errors, files: "" });
+    if (errors.files) setErrors(prev => ({ ...prev, files: "" }));
   };
 
   const handleSubmit = async (e) => {
@@ -97,16 +76,25 @@ export default function ContactPage() {
     setIsSubmitting(true);
 
     try {
+      const formData = new FormData();
+      formData.append("name", form.name);
+      formData.append("email", form.email);
+      formData.append("message", form.message);
+
+      files.forEach((file, idx) => {
+        formData.append("files", file, file.name);
+      });
+
       const res = await fetch("/api/sendmail", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
+        body: formData,
       });
 
       if (res.ok) {
         setStatus("✅ Message sent successfully! I'll get back to you soon.");
         setStatusType("success");
-        setForm({ name: "", email: "", message: "", files: [] });
+        setForm({ name: "", email: "", message: "" });
+        setFiles([]);
         if (fileInputRef.current) fileInputRef.current.value = "";
       } else {
         const data = await res.json();
@@ -124,13 +112,7 @@ export default function ContactPage() {
   return (
     <main className="container">
       <div className="contact-container">
-        <div className="contact-header">
-          <h1>Get in Touch</h1>
-          <p className="intro">
-            Have something in mind or just want to chat? Reach out using the form below or email me at{" "}
-            <a href="mailto:ramprasadselvam@gmail.com">ramprasadselvam@gmail.com</a>.
-          </p>
-        </div>
+        <h1>Get in Touch</h1>
 
         <form className="contact-form" onSubmit={handleSubmit} noValidate>
           <div className="form-group">
@@ -175,26 +157,6 @@ export default function ContactPage() {
           <div className="file-section">
             <label className="file-upload-label">
               <div className={`file-upload ${errors.files ? "input-error" : ""}`}>
-                <div className="upload-icon">
-                  <svg
-                    width="24"
-                    height="24"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <path d="M11 15H13V9H16L12 4L8 9H11V15Z" fill="currentColor" />
-                    <path
-                      d="M20 18H4V11H2V18C2 19.103 2.897 20 4 20H20C21.103 20 22 19.103 22 18V11H20V18Z"
-                      fill="currentColor"
-                    />
-                  </svg>
-                </div>
-                <span>
-                  {form.files.length > 0
-                    ? `${form.files.length} file${form.files.length > 1 ? "s" : ""} selected`
-                    : "Click to upload files (optional, max 5 files, total 5MB)"}
-                </span>
                 <input
                   type="file"
                   name="files"
@@ -202,34 +164,19 @@ export default function ContactPage() {
                   multiple
                   ref={fileInputRef}
                 />
+                <div className="upload-text">
+                  {files.length > 0 ? `${files.length} file${files.length > 1 ? "s" : ""} selected` : "Click to upload files (max total size 4.5MB)"}
+                </div>
               </div>
             </label>
 
-            {form.files.length > 0 && (
+            {files.length > 0 && (
               <div className="file-preview-list">
-                {form.files.map((file, idx) => (
+                {files.map((file, idx) => (
                   <div key={idx} className="file-preview">
                     <span>{file.name}</span>
-                    <button
-                      type="button"
-                      onClick={() => removeFile(idx)}
-                      className="remove-file"
-                      aria-label={`Remove ${file.name}`}
-                    >
-                      <svg
-                        width="16"
-                        height="16"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        xmlns="http://www.w3.org/2000/svg"
-                      >
-                        <path
-                          d="M6 18L18 6M6 6L18 18"
-                          stroke="currentColor"
-                          strokeWidth="2"
-                          strokeLinecap="round"
-                        />
-                      </svg>
+                    <button type="button" onClick={() => removeFile(idx)} aria-label={`Remove ${file.name}`}>
+                      ×
                     </button>
                   </div>
                 ))}
@@ -239,27 +186,12 @@ export default function ContactPage() {
             {errors.files && <span className="error">{errors.files}</span>}
           </div>
 
-          <button
-            type="submit"
-            className={`submit-btn ${isSubmitting ? "submitting" : ""}`}
-            disabled={isSubmitting}
-          >
-            {isSubmitting ? (
-              <>
-                <span className="spinner"></span>
-                Sending...
-              </>
-            ) : (
-              "Send Message"
-            )}
+          <button type="submit" disabled={isSubmitting} className={`submit-btn ${isSubmitting ? "submitting" : ""}`}>
+            {isSubmitting ? "Sending..." : "Send Message"}
           </button>
         </form>
 
-        {status && (
-          <div className={`status ${statusType} ${status ? "show" : ""}`}>
-            {status}
-          </div>
-        )}
+        {status && <div className={`status ${statusType}`}>{status}</div>}
       </div>
     </main>
   );
