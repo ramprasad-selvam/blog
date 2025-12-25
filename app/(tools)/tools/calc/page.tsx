@@ -114,8 +114,8 @@ export default function LoanSolver() {
         {/* Input Controls */}
         <div className="xl:col-span-5 bg-zinc-900/20 border border-white/5 rounded-[3rem] p-10 space-y-8">
           <div className="space-y-6">
-            <SolverInput label="Loan Amount" icon={<Banknote size={18}/>} value={values.amount} onChange={(v) => handleManualInput("amount", v)} />
-            <SolverInput label="Tenure (Months)" icon={<Calendar size={18}/>} value={values.tenure} onChange={(v) => handleManualInput("tenure", v)} />
+            <SolverInput label="Loan Amount" icon={<Banknote size={18}/>} value={values.amount} onChange={(v:string) => handleManualInput("amount", v)} />
+            <SolverInput label="Tenure (Months)" icon={<Calendar size={18}/>} value={values.tenure} onChange={(v:string) => handleManualInput("tenure", v)} />
             
             <div className="h-px bg-white/5 my-4" />
 
@@ -123,7 +123,7 @@ export default function LoanSolver() {
               label="Interest Rate (%)" 
               icon={<Percent size={18}/>} 
               value={values.rate} 
-              onChange={(v) => handleManualInput("rate", v)} 
+              onChange={(v:string) => handleManualInput("rate", v)} 
               isAuto={lastChanged.current === "emi"} 
             />
             
@@ -131,7 +131,7 @@ export default function LoanSolver() {
               label="Monthly EMI" 
               icon={<Calculator size={18}/>} 
               value={values.emi} 
-              onChange={(v) => handleManualInput("emi", v)} 
+              onChange={(v:string) => handleManualInput("emi", v)} 
               isAuto={lastChanged.current === "rate"} 
             />
           </div>

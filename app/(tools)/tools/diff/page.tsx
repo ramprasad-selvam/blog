@@ -80,7 +80,6 @@ export default function DiffCheckerPage() {
                   wordRemovedBackground: "#7f1d1d",
                   codeFoldBackground: "#18181b",
                   codeFoldContentColor: "#71717a",
-                  lineNumberColor: "#3f3f46",
                   gutterBackground: "transparent",
                   gutterColor: "#3f3f46",
                 }
