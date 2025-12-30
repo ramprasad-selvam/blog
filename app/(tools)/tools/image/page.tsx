@@ -63,15 +63,8 @@ export default function ImageStudio() {
   const updateOnlineSource = () => {
     setIsFetching(true);
     const { width, height } = options;
-    const seed = Math.floor(Math.random() * 5000);
-    // Rotating through multiple APIs for variety
-    const providers = [
-      `https://picsum.photos/${width}/${height}?random=${seed}`,
-      `https://loremflickr.com/${width}/${height}/abstract?lock=${seed}`,
-      `https://source.unsplash.com/random/${width}x${height}/?wallpaper,nature&sig=${seed}`
-    ];
-    const randomProvider = providers[Math.floor(Math.random() * providers.length)];
-    setOptions(prev => ({ ...prev, onlineUrl: randomProvider }));
+    const proxyUrl = `/api/image?width=${width}&height=${height}&t=${Date.now()}`;
+    setOptions(prev => ({ ...prev, onlineUrl: proxyUrl }));
   };
 
   useEffect(() => {
