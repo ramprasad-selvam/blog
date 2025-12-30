@@ -2,32 +2,21 @@ import { NextRequest, NextResponse } from 'next/server';
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
-
-  // Default dimensions if not provided
   const width = searchParams.get('width') || '800';
   const height = searchParams.get('height') || '600';
   const seed = Math.floor(Math.random() * 5000);
-
-  // Your rotation logic
   const providers = [
     `https://picsum.photos/${width}/${height}?random=${seed}`,
     `https://loremflickr.com/${width}/${height}/abstract?lock=${seed}`,
-    // `https://source.unsplash.com/random/${width}x${height}/?wallpaper,nature&sig=${seed}`
   ];
-
-  // Pick one randomly
   const selectedUrl = providers[Math.floor(Math.random() * providers.length)];
-
   try {
     const response = await fetch(selectedUrl);
-
     if (!response.ok) {
       throw new Error(`Provider failed with status: ${response.status}`);
     }
-
     const blob = await response.blob();
     const contentType = response.headers.get('content-type') || 'image/jpeg';
-
     return new NextResponse(blob, {
       status: 200,
       headers: {
