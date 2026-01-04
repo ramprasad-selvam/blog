@@ -14,6 +14,7 @@ const navItems = [
   { name: "Images", icon: ImageIcon, href: "/tools/image", sub: "Gradients & Assets" },
   { name: "JSON Inspector", icon: TableProperties, href: "/tools/json-table", sub: "Data Explorer" },
   { name: "Calculators", icon: Calculator, href: "/tools/calc", sub: "Interest & EMI" },
+  { name: "Share", icon: Calculator, href: "/tools/share", sub: "QR Code Generator" },
 ];
 export default function ToolsLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
