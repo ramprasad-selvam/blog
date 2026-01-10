@@ -8,14 +8,14 @@ import {
 
 export default function LoanSolver() {
   const [values, setValues] = useState({
-    amount: "100000",
-    tenure: "12",
-    rate: "10",
-    emi: ""
+    amount: "600000",
+    tenure: "36",
+    rate: "",
+    emi: "19800"
   });
 
   // This ref tracks what the user is currently typing so we don't overwrite it
-  const lastChanged = useRef<"rate" | "emi" | null>("rate");
+  const lastChanged = useRef<"rate" | "emi" | null>("emi");
 
   const [stats, setStats] = useState({
     totalInterest: 0,
@@ -100,11 +100,11 @@ export default function LoanSolver() {
         <div className="flex gap-4">
           <div className="bg-black/40 border border-white/5 px-6 py-4 rounded-3xl text-center min-w-[140px]">
             <p className="text-[8px] font-black text-zinc-600 uppercase mb-1">Interest Cost</p>
-            <p className="text-xl font-bold text-orange-400 font-mono">${stats.totalInterest.toLocaleString(undefined, {maximumFractionDigits: 0})}</p>
+            <p className="text-xl font-bold text-orange-400 font-mono">₹ {stats.totalInterest.toLocaleString(undefined, {maximumFractionDigits: 0})}</p>
           </div>
           <div className="bg-black/40 border border-white/5 px-6 py-4 rounded-3xl text-center min-w-[140px]">
             <p className="text-[8px] font-black text-zinc-600 uppercase mb-1">Total Payback</p>
-            <p className="text-xl font-bold text-blue-400 font-mono">${stats.totalPayment.toLocaleString(undefined, {maximumFractionDigits: 0})}</p>
+            <p className="text-xl font-bold text-blue-400 font-mono">₹ {stats.totalPayment.toLocaleString(undefined, {maximumFractionDigits: 0})}</p>
           </div>
         </div>
       </div>
