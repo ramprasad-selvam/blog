@@ -1,113 +1,65 @@
 export const resume = {
   header: {
-    name: "Your Full Name",
-    title: "Senior Full Stack Engineer (React, Node.js)",
-    email: "your@email.com",
-    phone: "+91-XXXXXXXXXX",
-    location: "India",
-    linkedin: "https://linkedin.com/in/yourname",
-    github: "https://github.com/yourname",
-    portfolio: "https://yoursite.dev",
+    name: "Ramprasad Selvam",
+    location: "Bengaluru, India",
+    phone: "+91-89407-56775",
+    email: "ramprasadselvam@gmail.com",
+    title: "Senior Software Engineer - React.js | Node.js | Next.js",
+    // Added links array to satisfy the .map() function
+    links: [
+      { label: "LinkedIn", href: "https://linkedin.com/in/ramprasadselvam" },
+      { label: "GitHub", href: "https://github.com/ramprasadselvam" }
+    ]
   },
-
-  summary: `
-Senior Full Stack Engineer with 6+ years of experience building scalable web
-applications using React, Next.js, and Node.js. Strong background in system
-design, REST and gRPC APIs, performance optimization, and database-driven
-applications.
-  `.trim(),
-
+  summary: "Senior Software Engineer with 6.5+ years of hands-on experience in architecting, developing, and deploying scalable fullstack applications. Expert in React.js, Node.js, and Next.js, with a strong background in both frontend and backend engineering. Adept at improving app performance, building microservices, and managing full lifecycle product development.",
   skills: {
-    frontend: [
-      "React",
-      "Next.js",
-      "JavaScript",
-      "TypeScript",
-      "HTML",
-      "CSS",
-      "Tailwind CSS",
-    ],
-    backend: [
-      "Node.js",
-      "Express.js",
-      "NestJS",
-      "REST APIs",
-      "gRPC",
-      "WebSockets",
-    ],
-    databases: ["PostgreSQL", "MongoDB", "Redis"],
-    devops: ["Docker", "Nginx", "PM2", "Git", "CI/CD"],
-    architecture: [
-      "Microservices",
-      "Caching",
-      "Rate Limiting",
-      "Load Balancing",
-      "Event Loop",
-      "Asynchronous Programming",
-    ],
+    frontend: ["JavaScript (ES6+)", "HTML5", "CSS3", "React.js", "React Native", "Redux", "Next.js"],
+    backend: ["Node.js", "Express.js", "PHP", "RESTful APIs", "gRPC", "Protocol Buffers", "Socket.io"],
+    tools: ["MySQL", "Redis", "K6", "Clinic.js", "GitLab", "Jenkins", "PM2", "Postman", "Linux", "CI/CD"]
   },
-
   experience: [
     {
-      company: "Tech Solutions Inc.",
-      role: "Senior Full Stack Engineer",
-      period: "2023 – Present",
+      company: "Justdial Ltd, Bengaluru",
+      role: "Senior Software Engineer",
+      period: "July 2021 - Present",
       points: [
-        "Designed and developed scalable web applications using React and Next.js",
-        "Built REST and gRPC APIs using Node.js for high-traffic applications",
-        "Improved application performance by 40% through caching and optimization",
-        "Worked with PostgreSQL and Redis for data storage and caching",
-        "Mentored junior developers and conducted code reviews",
-      ],
+        "Led fullstack development of scalable microservices for ticketing, CMS, and campaign modules.",
+        "Built performant web apps with Next.js, Node.js, MySQL, Redis, and PHP.",
+        "Conducted API and app performance tuning using K6 and Clinic.js.",
+        "Automated CI/CD using Jenkins, improving deployment cycles."
+      ]
     },
     {
-      company: "Creative Digital Agency",
-      role: "Full Stack Developer",
-      period: "2021 – 2023",
+      company: "Consortia22, Chennai",
+      role: "Senior Developer",
+      period: "June 2020 - June 2021",
       points: [
-        "Developed custom web applications using React and Node.js",
-        "Built backend services using Express.js and PostgreSQL",
-        "Delivered high-traffic marketing and e-commerce platforms",
-        "Integrated third-party APIs and payment gateways",
-      ],
+        "Delivered cross-platform mobile apps using React.js, React Native, Redux.",
+        "Implemented high-performance service calls via gRPC and Protocol Buffers.",
+        "Managed microservices with PM2 to maintain application uptime."
+      ]
     },
     {
-      company: "Startup Hub",
-      role: "Junior Developer",
-      period: "2019 – 2021",
+      company: "Dotcue Technologies Pvt Ltd, Chennai",
+      role: "Associate Developer",
+      period: "Oct 2018 - May 2020",
       points: [
-        "Assisted in building MVP applications using JavaScript and React",
-        "Implemented responsive UI components",
-        "Worked with Firebase for authentication and data storage",
-      ],
-    },
+        "Migrated legacy PHP systems to modern stack: React.js, Node.js, Redis, and Socket.io.",
+        "Developed real-time communication systems using Socket.io.",
+        "Delivered production-ready platforms with 300+ daily internal users."
+      ]
+    }
   ],
-
-  projects: [
+  additionalSections: [
     {
-      name: "Real-Time Monitoring System",
-      points: [
-        "Built centralized monitoring for multiple Node.js instances",
-        "Tracked request count, response time, and instance health",
-        "Implemented gRPC-based communication",
-        "Developed React dashboard for real-time visualization",
-      ],
-      tech: ["Node.js", "gRPC", "Redis", "React"],
-    },
-    {
-      name: "Portfolio Website",
-      points: [
-        "Developed personal portfolio using Next.js and Tailwind CSS",
-        "Implemented responsive and accessible UI",
-        "Deployed using Vercel",
-      ],
-      tech: ["Next.js", "React", "Tailwind CSS"],
-    },
-  ],
-
-  education: {
-    degree: "Bachelor of Engineering",
-    institution: "University Name",
-    year: "2019",
-  },
+      title: "Education",
+      items: [
+        {
+          heading: "Nehru Institute of Engineering and Technology, Coimbatore",
+          subHeading: "B.E. - Aeronautical Engineering | 2013 - 2017",
+          description: "GPA: 6.13 | Final Project: Performance Analysis on a Small-Scale Tesla Turbine"
+        }
+      ]
+    }
+  ]
 };
