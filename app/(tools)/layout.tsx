@@ -6,17 +6,58 @@ import { usePathname } from "next/navigation";
 import { 
   Zap, FileCode, GitCompare, Clock, 
   Image as ImageIcon, Calculator, TableProperties,
-  Menu, X 
+  Menu, X, Coins, Share2
 } from "lucide-react";
 
 const navItems = [
-  { name: "Code Studio", icon: Zap, href: "/tools", sub: "Core Engine" },
-  { name: "Diff Checker", icon: GitCompare, href: "/tools/diff", sub: "Date & Time Diff" },
-  { name: "World Clock", icon: Clock, href: "/tools/clock", sub: "Live Precision" },
-  { name: "Images", icon: ImageIcon, href: "/tools/image", sub: "Gradients & Assets" },
-  { name: "JSON Inspector", icon: TableProperties, href: "/tools/json-table", sub: "Data Explorer" },
-  { name: "Calculators", icon: Calculator, href: "/tools/calc", sub: "Interest & EMI" },
-  { name: "Share", icon: Calculator, href: "/tools/share", sub: "QR Code Generator" },
+  { 
+    name: "Metal Terminal", 
+    icon: Coins, 
+    href: "/tools/metal", 
+    sub: "Live Gold & Bullion" 
+  },
+  { 
+    name: "Code Studio", 
+    icon: Zap, 
+    href: "/tools", 
+    sub: "Core Engine" 
+  },
+  { 
+    name: "Diff Checker", 
+    icon: GitCompare, 
+    href: "/tools/diff", 
+    sub: "Date & Time Diff" 
+  },
+  { 
+    name: "World Clock", 
+    icon: Clock, 
+    href: "/tools/clock", 
+    sub: "Live Precision" 
+  },
+  { 
+    name: "JSON Inspector", 
+    icon: TableProperties, 
+    href: "/tools/json-table", 
+    sub: "Data Explorer" 
+  },
+  { 
+    name: "Calculators", 
+    icon: Calculator, 
+    href: "/tools/calc", 
+    sub: "Interest & EMI" 
+  },
+  { 
+    name: "Asset Creator", 
+    icon: ImageIcon, 
+    href: "/tools/image", 
+    sub: "Gradients & Assets" 
+  },
+  { 
+    name: "Share", 
+    icon: Share2, 
+    href: "/tools/share", 
+    sub: "QR Generator" 
+  },
 ];
 
 export default function ToolsLayout({ children }: { children: React.ReactNode }) {
