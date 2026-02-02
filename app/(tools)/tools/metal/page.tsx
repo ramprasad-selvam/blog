@@ -15,7 +15,7 @@ export default function MetalDashboard() {
   useEffect(() => {
     async function getRates() {
       try {
-        const response = await fetch("/api/price");
+        const response = await fetch("/api/metal");
         const json = await response.json();
         if (json.success && json.data?.rates) {
           const fetchedRates = json.data.rates;
