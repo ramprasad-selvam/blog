@@ -136,7 +136,7 @@ export default function MetalDashboard() {
             <LineChart data={filteredHistory}>
               <CartesianGrid strokeDasharray="3 3" stroke="#222" vertical={false} />
               <XAxis dataKey="date" stroke="#444" fontSize={10} tickLine={false} axisLine={false} minTickGap={30} />
-              <YAxis stroke="#444" fontSize={10} tickLine={false} axisLine={false} domain={['auto', 'auto']} tickFormatter={(v) => `₹${v/1000}k`} />
+              <YAxis stroke="#444" fontSize={10} tickLine={false} axisLine={false} domain={['auto', 'auto']} tickFormatter={(v) => `₹${v/1000}`} />
               <Tooltip 
                 contentStyle={{ backgroundColor: '#000', border: '1px solid #222', borderRadius: '16px', fontSize: '12px' }}
                 itemStyle={{ fontWeight: 'bold', padding: '2px 0' }}
