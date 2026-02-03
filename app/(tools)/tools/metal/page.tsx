@@ -3,35 +3,49 @@
 import { useState, useEffect } from "react";
 import { 
   Gem, Coins, Calculator, ArrowRightLeft, 
-  Clock, TrendingUp, Layers, Activity, Info, Check 
+  TrendingUp, Info, Activity 
 } from "lucide-react";
+// Add these imports
+import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
 
 export default function MetalDashboard() {
   const [rates, setRates] = useState<any>(null);
+  const [history, setHistory] = useState<any[]>([]); // New state for graph
   const [loading, setLoading] = useState(true);
   const [selectedMetal, setSelectedMetal] = useState("gold_22k");
   const [calc, setCalc] = useState({ grams: "1", total: "" });
 
   useEffect(() => {
-    async function getRates() {
+    async function getData() {
       try {
-        const response = await fetch("/api/metal");
-        const json = await response.json();
-        if (json.success && json.data?.rates) {
-          const fetchedRates = json.data.rates;
-          setRates(fetchedRates);
-          setCalc({ grams: "1", total: fetchedRates.gold_22k.toString() });
+        const [ratesRes, historyRes] = await Promise.all([
+          fetch("/api/metal"),
+          fetch("/api/metal/history")
+        ]);
+        
+        const ratesJson = await ratesRes.json();
+        const historyJson = await historyRes.json();
+
+        if (ratesJson.success && ratesJson.data?.rates) {
+          setRates(ratesJson.data.rates);
+          setCalc({ grams: "1", total: ratesJson.data.rates.gold_22k.toString() });
         }
-      } catch (error) { console.error(error); } finally { setLoading(false); }
+        if (historyJson.success) {
+          setHistory(historyJson.data);
+        }
+      } catch (error) { 
+        console.error(error); 
+      } finally { 
+        setLoading(false); 
+      }
     }
-    getRates();
+    getData();
   }, []);
 
-  // Update calculation whenever grams or selected metal changes
+  // ... (keep handleCalc and changeMetal functions same as your original)
   const handleCalc = (field: "grams" | "total", value: string, currentRate?: number) => {
     if (!rates) return;
     const rate = currentRate || rates[selectedMetal];
-
     if (field === "grams") {
       const g = parseFloat(value) || 0;
       setCalc({ grams: value, total: (g * rate).toFixed(2) });
@@ -66,9 +80,31 @@ export default function MetalDashboard() {
         <RateCard label="22K Standard" price={rates.gold_22k} icon={<Coins className="text-orange-400" />} percent="91.6%" highlight="border-orange-500/20 bg-orange-500/5" />
       </div>
 
-      {/* 2. ADVANCED CALCULATOR */}
+      {/* 2. GRAPH SECTION */}
+      <div className="bg-zinc-900/20 border border-white/5 rounded-[3rem] p-8">
+        <h2 className="text-xl font-black italic text-white uppercase tracking-tighter flex items-center gap-2 mb-8">
+          <Activity size={22} className="text-orange-500" /> Price Trend (90 Days)
+        </h2>
+        <div className="h-[300px] w-full">
+          <ResponsiveContainer width="100%" height="100%">
+            <LineChart data={history}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#333" vertical={false} />
+              <XAxis dataKey="date" stroke="#555" fontSize={10} tickLine={false} axisLine={false} />
+              <YAxis hide domain={['auto', 'auto']} />
+              <Tooltip 
+                contentStyle={{ backgroundColor: '#111', border: '1px solid #333', borderRadius: '12px' }}
+                itemStyle={{ fontSize: '12px', fontWeight: 'bold' }}
+              />
+              <Line type="monotone" dataKey="gold_24k" stroke="#eab308" strokeWidth={3} dot={false} name="24K Gold" />
+              <Line type="monotone" dataKey="gold_22k" stroke="#f97316" strokeWidth={2} dot={false} name="22K Gold" />
+            </LineChart>
+          </ResponsiveContainer>
+        </div>
+      </div>
+
+      {/* 3. ADVANCED CALCULATOR */}
       <div className="bg-zinc-900/20 border border-white/5 rounded-[3rem] p-8 md:p-12 space-y-10 relative overflow-hidden">
-        
+        {/* ... (Keep your original calculator code here) ... */}
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 relative z-10">
           <div className="space-y-1">
             <h2 className="text-xl font-black italic text-white uppercase tracking-tighter flex items-center gap-2">
@@ -77,7 +113,6 @@ export default function MetalDashboard() {
             <p className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">Calculated using live {selectedMetal.replace('_', ' ')} rate</p>
           </div>
           
-          {/* METAL SELECTOR SWITCH */}
           <div className="flex bg-black/40 p-1.5 rounded-2xl border border-white/5 w-full md:w-auto overflow-x-auto no-scrollbar">
             {metalOptions.map((opt) => (
               <button
@@ -117,7 +152,6 @@ export default function MetalDashboard() {
           </div>
         </div>
 
-        {/* METALLIC PROPERTIES INFO */}
         <div className="p-6 bg-black/20 rounded-[2rem] border border-white/5 flex flex-col md:flex-row gap-6 justify-between">
            <InfoItem label="Current Rate" value={`₹${rates[selectedMetal].toLocaleString()}/g`} />
            <InfoItem label="Metal Purity" value={metalOptions.find(o => o.key === selectedMetal)?.purity || ""} />
@@ -128,6 +162,7 @@ export default function MetalDashboard() {
   );
 }
 
+// ... (keep InfoItem, RateCard, and getUsage helper functions as they were)
 function InfoItem({ label, value }: any) {
     return (
         <div className="space-y-1">
