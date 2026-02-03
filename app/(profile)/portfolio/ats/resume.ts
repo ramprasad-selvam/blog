@@ -1,17 +1,24 @@
+const experience = () => {
+  const startDate = new Date('2018-10-21');
+  const now = new Date();
+  const diffInMs = now.getTime() - startDate.getTime();
+  const diffInYears = diffInMs / (31557600000);
+  return diffInYears.toFixed(1);
+}
 export const resume = {
   header: {
     name: "Ramprasad Selvam",
     location: "Bengaluru, India",
-    phone: "+91-89407-56775",
+    phone: "+91-8940756775",
     email: "ramprasadselvam@gmail.com",
     title: "Senior Software Engineer - React.js | Node.js | Next.js",
-    // Added links array to satisfy the .map() function
     links: [
       { label: "LinkedIn", href: "https://linkedin.com/in/ramprasadselvam" },
-      { label: "GitHub", href: "https://github.com/ramprasadselvam" }
+      // { label: "GitHub", href: "https://github.com/ramprasadselvam" },
+      { label: "Portfolio", href: "https://ramprasadselvam.vercel.app" }
     ]
   },
-  summary: "Senior Software Engineer with 6.5+ years of hands-on experience in architecting, developing, and deploying scalable fullstack applications. Expert in React.js, Node.js, and Next.js, with a strong background in both frontend and backend engineering. Adept at improving app performance, building microservices, and managing full lifecycle product development.",
+  summary: `Senior Software Engineer with ${experience()} years of hands-on experience in architecting, developing, and deploying scalable fullstack applications. Expert in React.js, Node.js, and Next.js, with a strong background in both frontend and backend engineering. Adept at improving app performance, building microservices, and managing full lifecycle product development.`,
   skills: {
     frontend: ["JavaScript (ES6+)", "HTML5", "CSS3", "React.js", "React Native", "Redux", "Next.js"],
     backend: ["Node.js", "Express.js", "PHP", "RESTful APIs", "gRPC", "Protocol Buffers", "Socket.io"],
