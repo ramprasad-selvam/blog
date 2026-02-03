@@ -4,7 +4,7 @@ import { sql } from '@vercel/postgres';
 export async function GET() {
   try {
     const { rows } = await sql`
-      SELECT date, gold_24k, gold_22k, silver 
+      SELECT date, gold_24k, gold_22k, gold_18k, gold_14k, platinum, silver 
       FROM precious_metals 
       ORDER BY date ASC 
       LIMIT 90
