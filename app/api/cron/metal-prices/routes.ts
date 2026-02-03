@@ -1,48 +1,35 @@
+export const dynamic = 'force-dynamic'; // CRITICAL FIX
+
 import { NextResponse } from 'next/server';
 import { sql } from '@vercel/postgres';
 
 export async function GET(request: Request) {
-    // 1. Security Check
-    const authHeader = request.headers.get('authorization');
-    if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
-        return new NextResponse('Unauthorized', { status: 401 });
-    }
+  const authHeader = request.headers.get('authorization');
+  
+  if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+    console.error("Auth mismatch. Check your CRON_SECRET.");
+    return new NextResponse('Unauthorized', { status: 401 });
+  }
 
-    try {
-        // 2. Fetch from your endpoint
-        const response = await fetch('https://ramprasadselvam.vercel.app/api/metal');
-        const json = await response.json();
+  try {
+    const response = await fetch('https://ramprasadselvam.vercel.app/api/metal');
+    const json = await response.json();
+    const { rates } = json.data;
 
-        // Extract the rates from your specific JSON structure
-        const { rates } = json.data;
+    console.log("Fetched Rates:", rates); // This will show in Vercel Logs
 
-        // 3. Upsert into Database
-        await sql`
+    const result = await sql`
       INSERT INTO precious_metals (date, gold_24k, gold_22k, gold_18k, gold_14k, platinum, silver)
-      VALUES (
-        CURRENT_DATE, 
-        ${rates.gold_24k}, 
-        ${rates.gold_22k}, 
-        ${rates.gold_18k}, 
-        ${rates.gold_14k}, 
-        ${rates.platinum}, 
-        ${rates.silver}
-      )
-      ON CONFLICT (date) DO UPDATE SET 
-        gold_24k = EXCLUDED.gold_24k,
-        gold_22k = EXCLUDED.gold_22k,
-        gold_18k = EXCLUDED.gold_18k,
-        gold_14k = EXCLUDED.gold_14k,
-        platinum = EXCLUDED.platinum,
-        silver = EXCLUDED.silver;
+      VALUES (CURRENT_DATE, ${rates.gold_24k}, ${rates.gold_22k}, ${rates.gold_18k}, ${rates.gold_14k}, ${rates.platinum}, ${rates.silver})
+      ON CONFLICT (date) DO UPDATE SET gold_24k = EXCLUDED.gold_24k
+      RETURNING *;
     `;
 
-        // 4. Delete data older than 90 days
-        await sql`DELETE FROM precious_metals WHERE date < CURRENT_DATE - INTERVAL '90 days';`;
+    console.log("DB Result:", result.rows);
+    return NextResponse.json({ success: true, data: result.rows });
 
-        return NextResponse.json({ success: true, message: "Data updated successfully" });
-    } catch (error) {
-        console.error(error);
-        return NextResponse.json({ error: 'Cron execution failed' }, { status: 500 });
-    }
+  } catch (error) {
+    console.error("Detailed Error:", error);
+    return NextResponse.json({ error: String(error) }, { status: 500 });
+  }
 }
