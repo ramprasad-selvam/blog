@@ -4,7 +4,7 @@ import React, { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { 
-  Zap, FileCode, GitCompare, Clock, 
+  Zap, ArrowRightLeft, GitCompare, Clock, 
   Image as ImageIcon, Calculator, TableProperties,
   Menu, X, Coins, Share2
 } from "lucide-react";
@@ -15,6 +15,12 @@ const navItems = [
     icon: Coins, 
     href: "/tools/metal", 
     sub: "Live Gold & Bullion" 
+  },
+  { 
+    name: "Unit Forge", 
+    icon: ArrowRightLeft,
+    href: "/tools/converter", 
+    sub: "The Final Converter" 
   },
   { 
     name: "Code Studio", 

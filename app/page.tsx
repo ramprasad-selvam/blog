@@ -4,7 +4,7 @@ import { Hammer, BookText, UserCircle } from 'lucide-react';
 
 export default function LandingPage() {
   const links = [
-    { title: "Dev Tools", href: "/tools", icon: Hammer, desc: "JSON, Base64 & IDs", color: "text-blue-500" },
+    { title: "Dev Tools", href: "/tools/metal", icon: Hammer, desc: "JSON, Base64 & IDs", color: "text-blue-500" },
     { title: "Technical Blog", href: "/blog", icon: BookText, desc: "Thoughts on engineering", color: "text-emerald-500" },
     { title: "Portfolio", href: "/portfolio", icon: UserCircle, desc: "Work & Contact", color: "text-purple-500" },
   ];
