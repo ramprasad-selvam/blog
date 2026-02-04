@@ -1,7 +1,24 @@
-const experienceYears = () => {
-    const start = new Date('2018-10-21');
-    const now = new Date();
-    return ((now.getTime() - start.getTime()) / 31557600000).toFixed(1);
+const experienceYears = (startDate = "2018-10-21") => {
+  const start = new Date(startDate);
+  const now = new Date();
+
+  let totalMonths =
+    (now.getFullYear() - start.getFullYear()) * 12 +
+    (now.getMonth() - start.getMonth());
+
+  if (now.getDate() < start.getDate()) {
+    totalMonths--;
+  }
+
+  let years = Math.floor(totalMonths / 12);
+  const months = totalMonths % 12;
+
+  if (months === 0) {
+    return `${years} years`;
+  }
+  const yLabel = years === 1 ? "year" : "years";
+  const mLabel = months === 1 ? "month" : "months";
+  return `${years} ${yLabel} ${months} ${mLabel}`;
 };
 export const resume = {
   header: {
@@ -16,7 +33,7 @@ export const resume = {
       { label: "Portfolio", href: "https://ramprasadselvam.vercel.app" }
     ]
   },
-  summary: `Senior Software Engineer with ${experienceYears()} years of hands-on experience in architecting, developing, and deploying scalable fullstack applications. Expert in React.js, Node.js, and Next.js, with a strong background in both frontend and backend engineering. Adept at improving app performance, building microservices, and managing full lifecycle product development.`,
+  summary: `Senior Software Engineer with ${experienceYears()} of hands-on experience in architecting, developing, and deploying scalable fullstack applications. Expert in React.js, Node.js, and Next.js, with a strong background in both frontend and backend engineering. Adept at improving app performance, building microservices, and managing full lifecycle product development.`,
   skills: {
     frontend: ["JavaScript (ES6+)", "HTML5", "CSS3", "React.js", "React Native", "Redux", "Next.js"],
     backend: ["Node.js", "Express.js", "PHP", "RESTful APIs", "gRPC", "Protocol Buffers", "Socket.io"],
