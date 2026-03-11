@@ -73,6 +73,8 @@ export default function PiInfiniteScroll() {
               value={jumpValue}
               onChange={(e) => setJumpValue(e.target.value)}
               placeholder="Start digit from..."
+              min={0}
+              max={100000000000000}
               className="flex-1 px-4 py-2 rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-500 outline-none shadow-sm"
             />
             <button
@@ -91,7 +93,7 @@ export default function PiInfiniteScroll() {
               className="bg-white p-6 rounded-xl shadow-sm border border-slate-200 break-all leading-relaxed text-slate-700 relative pt-8"
             >
               <div className="absolute -top-3 left-4 bg-slate-800 text-white text-[10px] px-3 py-1 rounded-full font-bold uppercase tracking-widest border-2 border-white shadow-sm">
-                Digits {(chunk.start).toLocaleString()} - {(chunk.start - 1 + chunk.content.length).toLocaleString()}
+                Digits {(chunk.start).toLocaleString()} - {(chunk.start + chunk.content.length - 1).toLocaleString()}
               </div>
 
               {/* Only show "3." if we are literally at index 0 */}
