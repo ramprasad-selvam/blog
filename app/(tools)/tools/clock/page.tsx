@@ -126,11 +126,11 @@ export default function WorldClockDashboard() {
                 <div className="space-y-2">
                   <div className="flex items-center gap-4">
                     <h3 className="text-4xl font-black tracking-tighter">{zone.split('/').pop()?.replace(/_/g, ' ')}</h3>
-                    {weatherData[zone] && (
+                    {/* {weatherData[zone] && (
                       <span className="bg-white/5 border border-white/10 px-4 py-1.5 rounded-2xl text-[11px] font-black text-blue-400">
                         {weatherData[zone]}
                       </span>
-                    )}
+                    )} */}
                   </div>
                   <span className="block text-[11px] font-black uppercase tracking-[0.4em] text-zinc-600">{zone.split('/')[0]}</span>
                 </div>

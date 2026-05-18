@@ -1,58 +1,68 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
-import { 
-  Gem, Coins, Calculator, ArrowRightLeft, 
-  TrendingUp, Info, Activity, Calendar, Eye, EyeOff, Loader2 
+import {
+  Gem, Coins, Calculator, ArrowRightLeft,
+  TrendingUp, Info, Activity, Calendar, Eye, EyeOff, Loader2
 } from "lucide-react";
-import { 
-  LineChart, Line, XAxis, YAxis, Tooltip, 
-  ResponsiveContainer, CartesianGrid 
+import {
+  LineChart, Line, XAxis, YAxis, Tooltip,
+  ResponsiveContainer, CartesianGrid
 } from 'recharts';
 
 export default function MetalDashboard() {
   const [rates, setRates] = useState<any>(null);
   const [history, setHistory] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loadingRates, setLoadingRates] = useState(true);
+  const [loadingHistory, setLoadingHistory] = useState(true);
   const [selectedMetal, setSelectedMetal] = useState("gold_22k");
   const [calc, setCalc] = useState({ grams: "1", total: "" });
 
   // 1. History Graph States
   const [days, setDays] = useState(90);
   const [visibleLines, setVisibleLines] = useState({
-    gold_24k: true,
+    gold_24k: false,
     gold_22k: true,
     gold_18k: false,
     gold_14k: false,
-    platinum: true,
+    platinum: false,
     silver: false,
   });
 
   useEffect(() => {
-    async function getData() {
+    async function getRates() {
       try {
-        const [ratesRes, historyRes] = await Promise.all([
-          fetch("/api/metal"),
-          fetch("/api/metal/history")
-        ]);
-        
+        const ratesRes = await fetch("/api/metal");
         const ratesJson = await ratesRes.json();
-        const historyJson = await historyRes.json();
 
         if (ratesJson.success && ratesJson.data?.rates) {
           setRates(ratesJson.data.rates);
           setCalc({ grams: "1", total: ratesJson.data.rates.gold_22k.toString() });
         }
+      } catch (error) {
+        console.error("Rates fetch error:", error);
+      } finally {
+        setLoadingRates(false);
+      }
+    }
+
+    async function getHistory() {
+      try {
+        const historyRes = await fetch("/api/metal/history");
+        const historyJson = await historyRes.json();
+
         if (historyJson.success) {
           setHistory(historyJson.data);
         }
-      } catch (error) { 
-        console.error("Fetch error:", error); 
-      } finally { 
-        setLoading(false); 
+      } catch (error) {
+        console.error("History fetch error:", error);
+      } finally {
+        setLoadingHistory(false);
       }
     }
-    getData();
+
+    getRates();
+    getHistory();
   }, []);
 
   // Filtered data for the graph
@@ -74,21 +84,15 @@ export default function MetalDashboard() {
 
   const changeMetal = (key: string) => {
     setSelectedMetal(key);
-    handleCalc("grams", calc.grams, rates[key]);
+    handleCalc("grams", calc.grams, rates?.[key]);
   };
 
   const toggleLine = (key: string) => {
     setVisibleLines(prev => ({ ...prev, [key as keyof typeof prev]: !prev[key as keyof typeof prev] }));
   };
 
-  if (loading) {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4">
-        <Loader2 className="w-10 h-10 text-blue-500 animate-spin" />
-        <p className="text-zinc-500 font-black uppercase tracking-widest animate-pulse">Synchronizing Market Data...</p>
-      </div>
-    );
-  }
+  const currentRate = rates?.[selectedMetal] ?? 0;
+  const currentRateLabel = loadingRates ? "Loading..." : `₹${currentRate.toLocaleString()}/g`;
 
   const metalOptions = [
     { key: "gold_24k", label: "24K", purity: "99.9%", color: "#eab308" },
@@ -101,11 +105,11 @@ export default function MetalDashboard() {
 
   return (
     <div className="flex flex-col gap-6 animate-in fade-in duration-1000 pb-20 px-4 max-w-7xl mx-auto w-full">
-      
+
       {/* 1. TOP CARDS */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <RateCard label="24K Investment" price={rates.gold_24k} icon={<Gem className="text-yellow-400" />} percent="99.9%" highlight="border-yellow-500/20 bg-yellow-500/5" />
-        <RateCard label="22K Standard" price={rates.gold_22k} icon={<Coins className="text-orange-400" />} percent="91.6%" highlight="border-orange-500/20 bg-orange-500/5" />
+        <RateCard label="24K Investment" price={rates?.gold_24k} icon={<Gem className="text-yellow-400" />} percent="99.9%" highlight="border-yellow-500/20 bg-yellow-500/5" />
+        <RateCard label="22K Standard" price={rates?.gold_22k} icon={<Coins className="text-orange-400" />} percent="91.6%" highlight="border-orange-500/20 bg-orange-500/5" />
       </div>
 
       {/* 2. INTERACTIVE GRAPH SECTION */}
@@ -132,23 +136,29 @@ export default function MetalDashboard() {
 
         {/* CHART AREA */}
         <div className="h-[350px] w-full bg-black/20 rounded-[2.5rem] p-4 border border-white/5 relative group">
-          <ResponsiveContainer width="100%" height="100%">
-            <LineChart data={filteredHistory}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#222" vertical={false} />
-              <XAxis dataKey="date" stroke="#444" fontSize={10} tickLine={false} axisLine={false} minTickGap={30} />
-              <YAxis stroke="#444" fontSize={10} tickLine={false} axisLine={false} domain={['auto', 'auto']} tickFormatter={(v) => `${(v).toLocaleString()}`} />
-              <Tooltip 
-                contentStyle={{ backgroundColor: '#000', border: '1px solid #222', borderRadius: '16px', fontSize: '12px' }}
-                itemStyle={{ fontWeight: 'bold', padding: '2px 0' }}
-                cursor={{ stroke: '#333', strokeWidth: 1 }}
-              />
-              {metalOptions.map(m => (
-                <Line key={m.key} type="monotone" dataKey={m.key} stroke={m.color} strokeWidth={3} dot={false} 
-                  hide={!visibleLines[m.key as keyof typeof visibleLines]} animationDuration={1000}
+          {loadingHistory ? (
+            <div className="flex h-full w-full items-center justify-center rounded-[2rem] bg-black/60 text-zinc-400 text-sm font-bold uppercase tracking-widest">
+              <Loader2 className="w-8 h-8 mr-3 animate-spin" /> Loading historical market data...
+            </div>
+          ) : (
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart data={filteredHistory}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#222" vertical={false} />
+                <XAxis dataKey="date" stroke="#444" fontSize={10} tickLine={false} axisLine={false} minTickGap={30} />
+                <YAxis stroke="#444" fontSize={10} tickLine={false} axisLine={false} domain={['auto', 'auto']} tickFormatter={(v) => `${(v).toLocaleString()}`} />
+                <Tooltip
+                  contentStyle={{ backgroundColor: '#000', border: '1px solid #222', borderRadius: '16px', fontSize: '12px' }}
+                  itemStyle={{ fontWeight: 'bold', padding: '2px 0' }}
+                  cursor={{ stroke: '#333', strokeWidth: 1 }}
                 />
-              ))}
-            </LineChart>
-          </ResponsiveContainer>
+                {metalOptions.map(m => (
+                  <Line key={m.key} type="monotone" dataKey={m.key} stroke={m.color} strokeWidth={3} dot={false}
+                    hide={!visibleLines[m.key as keyof typeof visibleLines]} animationDuration={1000}
+                  />
+                ))}
+              </LineChart>
+            </ResponsiveContainer>
+          )}
         </div>
 
         {/* VISIBILITY TOGGLES */}
@@ -177,7 +187,7 @@ export default function MetalDashboard() {
             </h2>
             <p className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">Calculated using live {selectedMetal.replace('_', ' ')} rate</p>
           </div>
-          
+
           <div className="flex bg-black/40 p-1.5 rounded-2xl border border-white/5 w-full md:w-auto overflow-x-auto scrollbar-hide">
             {metalOptions.map((opt) => (
               <button key={opt.key} onClick={() => changeMetal(opt.key)}
@@ -210,9 +220,9 @@ export default function MetalDashboard() {
         </div>
 
         <div className="p-6 bg-black/20 rounded-[2rem] border border-white/5 flex flex-col md:flex-row gap-6 justify-between">
-           <InfoItem label="Current Rate" value={`₹${rates[selectedMetal].toLocaleString()}/g`} />
-           <InfoItem label="Metal Purity" value={metalOptions.find(o => o.key === selectedMetal)?.purity || ""} />
-           <InfoItem label="Typical Use" value={getUsage(selectedMetal)} />
+          <InfoItem label="Current Rate" value={currentRateLabel} />
+          <InfoItem label="Metal Purity" value={metalOptions.find(o => o.key === selectedMetal)?.purity || ""} />
+          <InfoItem label="Typical Use" value={getUsage(selectedMetal)} />
         </div>
       </div>
     </div>
@@ -221,12 +231,12 @@ export default function MetalDashboard() {
 
 // Sub-components
 function InfoItem({ label, value }: any) {
-    return (
-        <div className="space-y-1">
-            <p className="text-[8px] font-black text-zinc-600 uppercase tracking-widest">{label}</p>
-            <p className="text-xs font-bold text-zinc-300 uppercase tracking-tighter">{value}</p>
-        </div>
-    )
+  return (
+    <div className="space-y-1">
+      <p className="text-[8px] font-black text-zinc-600 uppercase tracking-widest">{label}</p>
+      <p className="text-xs font-bold text-zinc-300 uppercase tracking-tighter">{value}</p>
+    </div>
+  )
 }
 
 function RateCard({ label, price, icon, percent, highlight }: any) {
@@ -235,7 +245,7 @@ function RateCard({ label, price, icon, percent, highlight }: any) {
       <div className="flex justify-between items-start mb-6">
         <div className="p-3 bg-black/40 rounded-2xl border border-white/5">{icon}</div>
         <div className="bg-black/40 px-3 py-1 rounded-full border border-white/5">
-            <p className="text-[10px] font-black text-white font-mono">{percent}</p>
+          <p className="text-[10px] font-black text-white font-mono">{percent}</p>
         </div>
       </div>
       <p className="text-[10px] font-black text-zinc-500 uppercase tracking-widest mb-1">{label}</p>
@@ -245,13 +255,13 @@ function RateCard({ label, price, icon, percent, highlight }: any) {
 }
 
 function getUsage(key: string) {
-    const usages: any = {
-        gold_24k: "Bars/Coins",
-        gold_22k: "Jewelry",
-        gold_18k: "Stone Settings",
-        gold_14k: "Watch/Daily Wear",
-        platinum: "Premium Bands",
-        silver: "Articles/Utensils"
-    };
-    return usages[key] || "Jewelry";
+  const usages: any = {
+    gold_24k: "Bars/Coins",
+    gold_22k: "Jewelry",
+    gold_18k: "Stone Settings",
+    gold_14k: "Watch/Daily Wear",
+    platinum: "Premium Bands",
+    silver: "Articles/Utensils"
+  };
+  return usages[key] || "Jewelry";
 }

@@ -21,7 +21,10 @@ export async function GET() {
 
     return NextResponse.json({
       success: true,
-      data: cachedRows
+      data: cachedRows.map(row => ({
+        ...row,
+        date: new Date(row.date).toLocaleDateString('en-IN', { month: 'short', day: 'numeric' })
+      }))
     });
   } catch (error) {
     return NextResponse.json({ success: false }, { status: 500 });
