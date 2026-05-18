@@ -1,7 +1,8 @@
-export const dynamic = 'force-dynamic'; // CRITICAL FIX
+export const dynamic = 'force-dynamic';
 
 import { NextResponse } from 'next/server';
 import { sql } from '@vercel/postgres';
+import { revalidateTag } from 'next/cache';
 
 export async function GET(request: Request) {
   const authHeader = request.headers.get('authorization');
@@ -16,7 +17,7 @@ export async function GET(request: Request) {
     const json = await response.json();
     const { rates } = json.data;
 
-    console.log("Fetched Rates:", rates); // This will show in Vercel Logs
+    console.log("Fetched Rates:", rates);
 
     const result = await sql`
       INSERT INTO precious_metals (date, gold_24k, gold_22k, gold_18k, gold_14k, platinum, silver)
@@ -41,6 +42,17 @@ export async function GET(request: Request) {
         LIMIT 90
       );
     `;
+
+    revalidateTag('precious-metals-data', 'page' as any);
+    console.log("Cache tag 'precious-metals-data' evicted successfully.");
+
+    try {
+      await fetch(`https://ramprasadselvam.vercel.app/api/metal/history`);
+      console.log("Cache pre-warmed for the next user request.");
+    } catch (warmError) {
+      console.error("Cache warming background fetch failed:", warmError);
+    }
+
     return NextResponse.json({ success: true, data: result.rows });
 
   } catch (error) {
