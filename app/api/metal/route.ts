@@ -19,7 +19,7 @@ export async function GET() {
 
     if (!prices) {
       return NextResponse.json(
-        { success: false, error: `Branch ${TARGET_BRANCH_CODE} not found.` },
+        { success: false, error: `No data found.` },
         { status: 404 }
       );
     }
