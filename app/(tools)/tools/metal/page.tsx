@@ -2,8 +2,8 @@
 
 import { useState, useEffect, useMemo } from "react";
 import {
-  Gem, Coins, Calculator, ArrowRightLeft,
-  TrendingUp, Info, Activity, Calendar, Eye, EyeOff, Loader2
+  Calculator, ArrowRightLeft,
+  TrendingUp, Activity, Eye, EyeOff, Loader2
 } from "lucide-react";
 import {
   LineChart, Line, XAxis, YAxis, Tooltip,
@@ -106,13 +106,26 @@ export default function MetalDashboard() {
   return (
     <div className="flex flex-col gap-6 animate-in fade-in duration-1000 pb-20 px-4 max-w-7xl mx-auto w-full">
 
-      {/* 1. TOP CARDS */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <RateCard label="24K Investment" price={rates?.gold_24k} icon={<Gem className="text-yellow-400" />} percent="99.9%" highlight="border-yellow-500/20 bg-yellow-500/5" />
-        <RateCard label="22K Standard" price={rates?.gold_22k} icon={<Coins className="text-orange-400" />} percent="91.6%" highlight="border-orange-500/20 bg-orange-500/5" />
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <RateCard
+          label="22K Gold"
+          price={rates?.gold_22k}
+          percent="91.6%"
+          highlight="border-orange-500/20 bg-orange-500/5"
+        />
+        <RateCard
+          label="Platinum"
+          price={rates?.platinum}
+          percent="95.0%"
+          highlight="border-slate-500/20 bg-slate-500/5"
+        />
+        <RateCard
+          label="Silver"
+          price={rates?.silver}
+          percent="92.5%"
+          highlight="border-cyan-500/20 bg-cyan-500/5"
+        />
       </div>
-
-      {/* 2. INTERACTIVE GRAPH SECTION */}
       <div className="bg-zinc-900/20 border border-white/5 rounded-[3rem] p-6 md:p-10 space-y-8">
         <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6">
           <div className="space-y-1">
@@ -121,8 +134,6 @@ export default function MetalDashboard() {
             </h2>
             <p className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">Compare price trends across different intervals</p>
           </div>
-
-          {/* DATE FILTERS */}
           <div className="flex bg-black/40 p-1 rounded-xl border border-white/5 overflow-x-auto">
             {[7, 10, 30, 60, 90].map((d) => (
               <button key={d} onClick={() => setDays(d)}
@@ -133,8 +144,6 @@ export default function MetalDashboard() {
             ))}
           </div>
         </div>
-
-        {/* CHART AREA */}
         <div className="h-[350px] w-full bg-black/20 rounded-[2.5rem] p-4 border border-white/5 relative group">
           {loadingHistory ? (
             <div className="flex h-full w-full items-center justify-center rounded-[2rem] bg-black/60 text-zinc-400 text-sm font-bold uppercase tracking-widest">
@@ -160,8 +169,6 @@ export default function MetalDashboard() {
             </ResponsiveContainer>
           )}
         </div>
-
-        {/* VISIBILITY TOGGLES */}
         <div className="flex flex-wrap gap-2 pt-2">
           {metalOptions.map((m) => {
             const active = visibleLines[m.key as keyof typeof visibleLines];
@@ -177,8 +184,6 @@ export default function MetalDashboard() {
           })}
         </div>
       </div>
-
-      {/* 3. CALCULATOR SECTION */}
       <div className="bg-zinc-900/20 border border-white/5 rounded-[3rem] p-8 md:p-12 space-y-10 relative overflow-hidden">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 relative z-10">
           <div className="space-y-1">
@@ -187,7 +192,6 @@ export default function MetalDashboard() {
             </h2>
             <p className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">Calculated using live {selectedMetal.replace('_', ' ')} rate</p>
           </div>
-
           <div className="flex bg-black/40 p-1.5 rounded-2xl border border-white/5 w-full md:w-auto overflow-x-auto scrollbar-hide">
             {metalOptions.map((opt) => (
               <button key={opt.key} onClick={() => changeMetal(opt.key)}
@@ -199,7 +203,6 @@ export default function MetalDashboard() {
             ))}
           </div>
         </div>
-
         <div className="grid grid-cols-1 md:grid-cols-11 gap-4 items-center relative z-10">
           <div className="md:col-span-5 space-y-2">
             <label className="text-[9px] font-black text-zinc-600 uppercase ml-4 tracking-widest">Weight (Grams)</label>
@@ -218,7 +221,6 @@ export default function MetalDashboard() {
             </div>
           </div>
         </div>
-
         <div className="p-6 bg-black/20 rounded-[2rem] border border-white/5 flex flex-col md:flex-row gap-6 justify-between">
           <InfoItem label="Current Rate" value={currentRateLabel} />
           <InfoItem label="Metal Purity" value={metalOptions.find(o => o.key === selectedMetal)?.purity || ""} />
@@ -241,15 +243,24 @@ function InfoItem({ label, value }: any) {
 
 function RateCard({ label, price, icon, percent, highlight }: any) {
   return (
-    <div className={`p-8 rounded-[2.5rem] border transition-all duration-500 hover:scale-[1.01] ${highlight}`}>
-      <div className="flex justify-between items-start mb-6">
-        <div className="p-3 bg-black/40 rounded-2xl border border-white/5">{icon}</div>
-        <div className="bg-black/40 px-3 py-1 rounded-full border border-white/5">
-          <p className="text-[10px] font-black text-white font-mono">{percent}</p>
+    <div
+      className={`relative p-5 rounded-[2rem] bg-zinc-900/60 backdrop-blur-xl border border-white/10 shadow-2xl transition-all duration-500 hover:-translate-y-1 hover:bg-zinc-800/80 hover:border-white/20 hover:shadow-white/5 group overflow-hidden ${highlight}`}
+    >
+      <div className="absolute inset-0 bg-gradient-to-br from-white/[0.03] to-transparent pointer-events-none" />
+      <div className="relative flex items-center justify-between gap-3">
+        <p className="text-xs font-bold text-zinc-400 uppercase tracking-widest transition-colors duration-300 group-hover:text-zinc-300">
+          {label}
+        </p>
+        <div className="px-3 py-1 rounded-full bg-white/5 border border-white/10 shadow-sm">
+          <p className="text-[10px] font-bold uppercase text-emerald-400 tracking-wider">
+            {percent}
+          </p>
         </div>
       </div>
-      <p className="text-[10px] font-black text-zinc-500 uppercase tracking-widest mb-1">{label}</p>
-      <p className="text-3xl font-black text-white font-mono tracking-tighter">₹{(price || 0).toLocaleString()}</p>
+      <p className="relative text-4xl font-black text-white tracking-tighter">
+        <span className="text-zinc-500 mr-1 font-sans text-2xl font-medium">₹</span>
+        <span className="font-mono">{((price || 0)).toLocaleString()}</span>
+      </p>
     </div>
   );
 }
