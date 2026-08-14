@@ -2,6 +2,7 @@
 
 import React, { useState, ChangeEvent, useRef } from 'react';
 import { QRCodeSVG } from 'qrcode.react';
+import { Download, Link2, ScanLine } from 'lucide-react';
 
 const QRGenerator: React.FC = () => {
   const [inputValue, setInputValue] = useState<string>('if you see this, it works!');
@@ -40,34 +41,55 @@ const QRGenerator: React.FC = () => {
   };
 
   return (
-    <div className="flex flex-col items-center gap-6 p-10 bg-gray-50 rounded-2xl shadow-inner">
-      <div className="w-full max-w-sm space-y-2">
-        <label className="text-sm font-medium text-gray-700">Share URL or Text</label>
+    <div className="mx-auto w-full max-w-5xl space-y-8 py-2 sm:py-6">
+      <header className="max-w-2xl">
+        <div className="mb-3 flex items-center gap-2 text-blue-400">
+          <ScanLine size={18} />
+          <span className="text-[10px] font-black uppercase tracking-[0.3em]">Share utility</span>
+        </div>
+        <h1 className="text-3xl font-black tracking-tight text-white sm:text-5xl">QR Code Studio</h1>
+        <p className="mt-3 text-sm leading-6 text-zinc-400 sm:text-base">Turn a URL or short message into a high-quality QR code ready to download.</p>
+      </header>
+
+      <section className="grid grid-cols-1 gap-5 rounded-[2rem] border border-white/10 bg-zinc-950/70 p-4 sm:p-6 lg:grid-cols-[1fr_360px] lg:p-8">
+        <div className="flex flex-col justify-between gap-8">
+          <div className="space-y-3">
+            <label className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.25em] text-zinc-500" htmlFor="qr-input">
+              <Link2 size={14} /> Share URL or text
+            </label>
         <input
+          id="qr-input"
           type="text"
           value={inputValue}
           onChange={handleInputChange}
           placeholder="Paste link here..."
-          className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition-all"
+          className="w-full rounded-xl border border-white/10 bg-black/40 px-4 py-4 text-sm text-white outline-none transition focus:border-blue-500/60 focus:ring-2 focus:ring-blue-500/20"
         />
-      </div>
+            <p className="text-xs text-zinc-600">Keep the content short for easier scanning.</p>
+          </div>
 
-      <div className="p-6 bg-white rounded-xl shadow-md">
-        <QRCodeSVG
-          ref={qrRef}
-          value={inputValue || " "}
-          size={200}
-          level="H" 
-        />
-      </div>
+          <button
+            onClick={downloadQRCode}
+            disabled={!inputValue}
+            className="flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-blue-600 px-5 py-3 text-sm font-bold text-white transition hover:bg-blue-500 disabled:cursor-not-allowed disabled:bg-zinc-800 disabled:text-zinc-500 sm:w-fit"
+          >
+            <Download size={17} />
+            Download PNG
+          </button>
+        </div>
 
-      <button
-        onClick={downloadQRCode}
-        disabled={!inputValue}
-        className="w-full max-w-sm py-3 bg-black text-white font-semibold rounded-lg hover:bg-gray-800 disabled:bg-gray-400 transition-colors"
-      >
-        Download QR Code (.png)
-      </button>
+        <div className="flex min-h-[300px] flex-col items-center justify-center rounded-2xl border border-white/10 bg-white p-6 shadow-xl shadow-black/20">
+          <div className="rounded-xl border border-slate-200 bg-white p-4">
+            <QRCodeSVG
+              ref={qrRef}
+              value={inputValue || " "}
+              size={220}
+              level="H"
+            />
+          </div>
+          <p className="mt-4 text-[10px] font-black uppercase tracking-[0.25em] text-slate-400">Live preview</p>
+        </div>
+      </section>
     </div>
   );
 };

@@ -3,7 +3,7 @@
 import { useState, useMemo } from "react";
 import { 
   Search, ChevronLeft, ChevronRight, ArrowUpDown, Code2, 
-  AlertCircle, Download, Trash2, Filter, Database, 
+  AlertCircle, Download, Trash2, Filter,
   Maximize2, Minimize2, Eye, EyeOff 
 } from "lucide-react";
 
@@ -70,6 +70,7 @@ export default function JsonInspectorPage() {
   const totalPages = Math.ceil(processedData.length / pageSize);
   const paginatedData = processedData.slice((currentPage - 1) * pageSize, currentPage * pageSize);
   const pageNumbers = Array.from({ length: totalPages }, (_, i) => i + 1);
+  const hasActiveFilters = Boolean(globalSearch || Object.values(columnFilters).some(Boolean));
 
   // --- 4. EXPORT FUNCTION ---
   const exportCSV = () => {
@@ -90,11 +91,22 @@ export default function JsonInspectorPage() {
   };
 
   return (
-    <div className="flex flex-col gap-8 animate-in fade-in duration-700 pb-20">
+    <div className="mx-auto flex w-full max-w-7xl flex-col gap-8 animate-in fade-in duration-700 pb-16">
+      <header className="flex flex-col gap-4 border-b border-white/10 pb-6 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <p className="mb-2 text-[10px] font-black uppercase tracking-[0.3em] text-emerald-400">Data utility</p>
+          <h1 className="text-3xl font-black tracking-tight text-white sm:text-4xl">JSON Inspector</h1>
+          <p className="mt-2 max-w-xl text-sm leading-6 text-zinc-500">Turn a JSON array into a searchable, sortable workspace and export the result as CSV.</p>
+        </div>
+        <div className="rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-left sm:text-right">
+          <span className="block text-[9px] font-black uppercase tracking-widest text-zinc-600">Input format</span>
+          <strong className="mt-1 block text-sm text-zinc-300">JSON array</strong>
+        </div>
+      </header>
       
       {/* SECTION: TOP JSON INPUT */}
-      <section className="bg-zinc-900/40 border border-white/5 rounded-[2.5rem] overflow-hidden shadow-2xl">
-        <div className="flex justify-between items-center px-8 py-4 bg-zinc-900/60 border-b border-white/5">
+      <section className="overflow-hidden rounded-3xl border border-white/10 bg-zinc-900/40 shadow-2xl">
+        <div className="flex items-center justify-between border-b border-white/10 bg-zinc-900/60 px-4 py-4 sm:px-6">
           <div className="flex items-center gap-3">
             <Code2 size={16} className="text-blue-500" />
             <span className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">JSON Source Data</span>
@@ -108,7 +120,7 @@ export default function JsonInspectorPage() {
         </div>
         <textarea 
           value={rawJson} onChange={(e) => { setRawJson(e.target.value); setCurrentPage(1); }}
-          className={`w-full bg-black/20 p-8 font-mono text-[11px] outline-none transition-all duration-500 scrollbar-hide resize-none ${isEditorExpanded ? 'h-[450px]' : 'h-[160px]'}`}
+          className={`w-full resize-none bg-black/20 p-4 font-mono text-[11px] outline-none transition-all duration-500 scrollbar-hide sm:p-6 ${isEditorExpanded ? 'h-[450px]' : 'h-[140px] sm:h-[170px]'}`}
           spellCheck={false}
           placeholder="Paste JSON array here..."
         />
@@ -116,11 +128,11 @@ export default function JsonInspectorPage() {
       </section>
 
       {/* SECTION: DATA TABLE AREA */}
-      <section className="bg-zinc-900/20 border border-white/5 rounded-[3rem] p-8 space-y-6">
+      <section className="space-y-6 rounded-3xl border border-white/10 bg-zinc-900/20 p-4 sm:p-6 lg:p-8">
         
         {/* Toolbar */}
         <div className="flex flex-col md:flex-row gap-6 justify-between items-center">
-          <div className="flex items-center gap-4 w-full md:w-auto">
+          <div className="flex w-full flex-col gap-3 md:w-auto md:flex-row md:items-center">
             <div className="relative flex-grow md:w-80">
               <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-600" size={14} />
               <input 
@@ -136,12 +148,16 @@ export default function JsonInspectorPage() {
               {[5, 10, 25, 50].filter(n => n < processedData.length).map(n => <option key={n} value={n}>Show {n}</option>)}
               <option value={processedData.length}>Show All ({processedData.length})</option>
             </select>
+            <span className="text-[10px] font-bold uppercase tracking-widest text-zinc-500">
+              {processedData.length} {processedData.length === 1 ? "record" : "records"}
+            </span>
           </div>
 
           <div className="flex items-center gap-4">
             <button 
               onClick={exportCSV}
-              className="flex items-center gap-2 bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/20 px-5 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest text-emerald-400 transition-all"
+              disabled={processedData.length === 0}
+              className="flex items-center gap-2 rounded-xl border border-emerald-500/20 bg-emerald-500/10 px-4 py-3 text-[10px] font-black uppercase tracking-widest text-emerald-400 transition-all hover:bg-emerald-500/20 disabled:cursor-not-allowed disabled:opacity-40"
             >
               <Download size={14} /> Export CSV
             </button>
@@ -161,7 +177,7 @@ export default function JsonInspectorPage() {
         </div>
 
         {/* Column Toggles */}
-        <div className="flex flex-wrap gap-2 py-2">
+        <div className="flex flex-wrap items-center gap-2 border-y border-white/5 py-4">
           <span className="text-[9px] font-black text-zinc-600 uppercase tracking-widest self-center mr-2">Columns:</span>
           {headers.map(h => (
             <button
@@ -215,7 +231,10 @@ export default function JsonInspectorPage() {
                     </tr>
                   ))
                 ) : (
-                  <tr><td colSpan={visibleHeaders.length} className="p-32 text-center opacity-30 uppercase text-[10px] font-black tracking-widest">No matching records</td></tr>
+                  <tr><td colSpan={visibleHeaders.length} className="p-20 text-center">
+                    <p className="text-sm font-bold text-zinc-400">No matching records</p>
+                    <p className="mt-1 text-xs text-zinc-600">{hasActiveFilters ? "Try clearing a filter or searching for another value." : "Paste a JSON array above to populate this table."}</p>
+                  </td></tr>
                 )}
               </tbody>
             </table>

@@ -60,7 +60,7 @@ export default function PiInfiniteScroll() {
   }, [fetchPiDigits, startOffset, hasMore, loading]);
 
   return (
-    <div className="min-h-screen bg-slate-50 py-12 px-4 font-mono">
+    <div className="reading-detail min-h-screen bg-slate-50 py-8 px-0 font-mono sm:py-12">
       <div className="max-w-8xl mx-auto">
         <header className="mb-10 text-center">
           <h1 className="text-4xl font-black text-slate-900 mb-2">π Explorer</h1>

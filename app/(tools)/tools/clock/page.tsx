@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useMemo, useRef } from "react";
 import { Search, MapPin, Trash2, Plus, Moon, Sun, Sunrise, Sunset, CloudSun, Globe, Cloud } from "lucide-react";
+import { secondsToMilliseconds } from "framer-motion";
 
 const ALL_TIMEZONES = Intl.supportedValuesOf('timeZone');
 
@@ -22,7 +23,7 @@ export default function WorldClockDashboard() {
     else setSelectedZones(["Asia/Kolkata", "Asia/Kuwait", "Asia/Singapore", "Asia/Dubai"]);
     if (saved12H) setUse12Hour(saved12H === "true");
     setIsLoaded(true);
-    const timer = setInterval(() => setTime(new Date()), 1000);
+    const timer = setInterval(() => setTime(new Date(Date.now() + 0.6 * secondsToMilliseconds(1))), 1000);
     return () => clearInterval(timer);
   }, []);
 
@@ -62,30 +63,35 @@ export default function WorldClockDashboard() {
     setSearch(""); setIsDropdownOpen(false);
   };
 
-  if (!isLoaded) return <div className="min-h-full bg-zinc-950 flex items-center justify-center text-zinc-700 font-black uppercase tracking-[0.4em]">Calibrating HUD</div>;
+  if (!isLoaded) return <div className="flex min-h-[60vh] items-center justify-center text-xs font-black uppercase tracking-[0.35em] text-zinc-500">Loading clocks</div>;
 
   return (
-    <div className="min-h-full bg-zinc-950 p-6 md:p-12 rounded-[4rem] space-y-10 text-white selection:bg-blue-500">
+    <div className="mx-auto flex min-h-full w-full max-w-7xl flex-col gap-8 rounded-3xl bg-zinc-950 p-4 text-white selection:bg-blue-500 sm:p-6 lg:p-10">
       
       {/* Search & Toggle */}
-      <div className="flex flex-col lg:flex-row justify-between items-center gap-8 border-b border-white/5 pb-10">
-        <div className="flex bg-zinc-900/40 p-1.5 rounded-2xl border border-white/5 shadow-inner">
-          <button onClick={() => setUse12Hour(true)} className={`px-8 py-2.5 rounded-xl text-[10px] font-black transition-all ${use12Hour ? 'bg-blue-600 text-white shadow-lg' : 'text-zinc-600'}`}>12H</button>
-          <button onClick={() => setUse12Hour(false)} className={`px-8 py-2.5 rounded-xl text-[10px] font-black transition-all ${!use12Hour ? 'bg-blue-600 text-white shadow-lg' : 'text-zinc-600'}`}>24H</button>
+      <div className="flex flex-col gap-5 border-b border-white/10 pb-6 lg:flex-row lg:items-end lg:justify-between">
+        <div>
+          <p className="mb-2 text-[10px] font-black uppercase tracking-[0.3em] text-blue-400">Time utility</p>
+          <h1 className="text-3xl font-black tracking-tight sm:text-4xl">World Clock</h1>
+          <p className="mt-2 text-sm text-zinc-500">Compare local time across the places that matter to you.</p>
+        </div>
+        <div className="flex w-fit rounded-xl border border-white/10 bg-zinc-900/70 p-1">
+          <button onClick={() => setUse12Hour(true)} className={`rounded-lg px-5 py-2.5 text-[10px] font-black transition-all ${use12Hour ? 'bg-blue-600 text-white shadow-lg' : 'text-zinc-500 hover:text-white'}`}>12H</button>
+          <button onClick={() => setUse12Hour(false)} className={`rounded-lg px-5 py-2.5 text-[10px] font-black transition-all ${!use12Hour ? 'bg-blue-600 text-white shadow-lg' : 'text-zinc-500 hover:text-white'}`}>24H</button>
         </div>
 
-        <div className="relative w-full md:w-[500px]" ref={dropdownRef}>
-          <Search className="absolute left-6 top-1/2 -translate-y-1/2 text-zinc-600" size={20} />
+        <div className="relative w-full lg:max-w-xl" ref={dropdownRef}>
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-600" size={18} />
           <input 
             type="text" placeholder="Global City Search..." value={search}
             onFocus={() => setIsDropdownOpen(true)}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full bg-zinc-900/30 border border-white/10 p-5 pl-16 rounded-[2rem] text-xs font-bold outline-none focus:ring-2 ring-blue-500/20 transition-all"
+            className="w-full rounded-xl border border-white/10 bg-zinc-900/50 p-4 pl-11 text-sm font-bold outline-none transition-all focus:border-blue-500/50 focus:ring-2 ring-blue-500/20"
           />
           {isDropdownOpen && (
-            <div className="absolute top-full mt-4 w-full max-h-80 overflow-y-auto bg-zinc-900 border border-zinc-800 rounded-[2rem] z-[100] shadow-2xl scrollbar-hide">
+            <div className="absolute top-full z-[100] mt-2 max-h-80 w-full overflow-y-auto rounded-2xl border border-zinc-800 bg-zinc-900 shadow-2xl scrollbar-hide">
               {ALL_TIMEZONES.filter(tz => tz.toLowerCase().includes(search.toLowerCase())).slice(0, 12).map(tz => (
-                <button key={tz} onClick={() => addZone(tz)} className="w-full text-left px-8 py-5 text-[10px] font-black border-b border-white/5 hover:bg-blue-600 flex justify-between items-center uppercase tracking-widest transition-colors">
+                <button key={tz} onClick={() => addZone(tz)} className="flex w-full items-center justify-between border-b border-white/5 px-5 py-4 text-left text-[10px] font-black uppercase tracking-widest transition-colors hover:bg-blue-600">
                   {tz.replace(/_/g, ' ')} <Plus size={16} />
                 </button>
               ))}
@@ -95,7 +101,7 @@ export default function WorldClockDashboard() {
       </div>
 
       {/* Responsive Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
         {selectedZones.map((zone) => {
           const tzDate = new Date(time.toLocaleString("en-US", { timeZone: zone }));
           const h = tzDate.getHours();
@@ -110,7 +116,7 @@ export default function WorldClockDashboard() {
           const currentMin = (hoursPassedInBlock * 60) + m;
 
           return (
-            <div key={zone} className="relative group bg-zinc-900/20 border border-white/5 rounded-[4rem] p-12 flex flex-col justify-between min-h-[440px] transition-all hover:bg-zinc-900/30 hover:border-white/10 shadow-2xl overflow-hidden">
+            <div key={zone} className="group relative flex min-h-[390px] flex-col justify-between overflow-hidden rounded-3xl border border-white/10 bg-zinc-900/30 p-6 shadow-2xl transition-all hover:border-white/20 hover:bg-zinc-900/50 sm:min-h-[420px] sm:p-8">
               
               {/* AM/PM Side Glow */}
               {use12Hour && (
@@ -125,7 +131,7 @@ export default function WorldClockDashboard() {
               <div className="relative z-10 flex justify-between items-start">
                 <div className="space-y-2">
                   <div className="flex items-center gap-4">
-                    <h3 className="text-4xl font-black tracking-tighter">{zone.split('/').pop()?.replace(/_/g, ' ')}</h3>
+                    <h3 className="text-3xl font-black tracking-tight sm:text-4xl">{zone.split('/').pop()?.replace(/_/g, ' ')}</h3>
                     {/* {weatherData[zone] && (
                       <span className="bg-white/5 border border-white/10 px-4 py-1.5 rounded-2xl text-[11px] font-black text-blue-400">
                         {weatherData[zone]}
@@ -136,7 +142,8 @@ export default function WorldClockDashboard() {
                 </div>
                 <button 
                   onClick={(e) => { e.stopPropagation(); setSelectedZones(prev => prev.filter(z => z !== zone)); }} 
-                  className="p-4 text-zinc-800 hover:text-red-500 transition-all opacity-0 group-hover:opacity-100"
+                  aria-label={`Remove ${zone}`}
+                  className="rounded-xl p-3 text-zinc-600 transition-all hover:bg-red-500/10 hover:text-red-400 sm:opacity-0 sm:group-hover:opacity-100"
                 >
                   <Trash2 size={24} />
                 </button>
@@ -144,7 +151,7 @@ export default function WorldClockDashboard() {
 
               {/* Digital HUD Time */}
               <div className="relative z-10">
-                <h2 className="text-[9vw] md:text-[6vw] font-mono font-bold tracking-tighter tabular-nums leading-none">
+                <h2 className="font-mono text-[clamp(2.8rem,6vw,5.5rem)] font-bold tracking-tighter tabular-nums leading-none">
                   {new Intl.DateTimeFormat("en-US", { 
                     timeZone: zone, hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: use12Hour 
                   }).format(time).replace(/AM|PM/, '').trim()}
@@ -152,11 +159,11 @@ export default function WorldClockDashboard() {
               </div>
 
               {/* Adaptive Stage & Duration Segments */}
-              <div className="relative z-10 flex flex-col sm:flex-row items-center justify-between pt-10 border-t border-white/5 gap-6">
-                <div className="flex items-center gap-4">
+              <div className="relative z-10 flex flex-col gap-5 border-t border-white/10 pt-6 sm:flex-row sm:items-center sm:justify-between">
+                <div className="flex items-center gap-3">
                   <span className={`${period.color} drop-shadow-[0_0_12px_rgba(255,255,255,0.1)]`}>{period.icon}</span>
                   <div className="flex flex-col">
-                    <span className={`text-[12px] font-black uppercase tracking-[0.2em] ${period.color}`}>{period.label}</span>
+                    <span className={`text-[11px] font-black uppercase tracking-[0.2em] ${period.color}`}>{period.label}</span>
                     <span className="text-[10px] font-bold text-zinc-600 uppercase tracking-tighter">{tzDate.toDateString()}</span>
                   </div>
                 </div>
@@ -166,7 +173,7 @@ export default function WorldClockDashboard() {
                     {Math.floor((totalMin - currentMin) / 60)}H {(totalMin - currentMin) % 60}M TO NEXT STAGE
                   </span>
                   {/* DYNAMIC BARS: Number of bars = Period Duration */}
-                  <div className="flex gap-2 p-2.5 bg-black/40 rounded-2xl border border-white/5">
+                  <div className="flex gap-1.5 rounded-xl border border-white/10 bg-black/40 p-2">
                     {[...Array(period.duration)].map((_, i) => {
                       const isFull = hoursPassedInBlock > i;
                       const isNow = hoursPassedInBlock === i;

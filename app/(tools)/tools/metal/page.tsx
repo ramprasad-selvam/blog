@@ -10,17 +10,21 @@ import {
   ResponsiveContainer, CartesianGrid
 } from 'recharts';
 
+type MetalKey = 'gold_24k' | 'gold_22k' | 'gold_18k' | 'gold_14k' | 'platinum' | 'silver';
+type Rates = Record<MetalKey, number>;
+type HistoryRow = Rates & { date: string };
+
 export default function MetalDashboard() {
-  const [rates, setRates] = useState<any>(null);
-  const [history, setHistory] = useState<any[]>([]);
+  const [rates, setRates] = useState<Rates | null>(null);
+  const [history, setHistory] = useState<HistoryRow[]>([]);
   const [loadingRates, setLoadingRates] = useState(true);
   const [loadingHistory, setLoadingHistory] = useState(true);
-  const [selectedMetal, setSelectedMetal] = useState("gold_22k");
+  const [selectedMetal, setSelectedMetal] = useState<MetalKey>("gold_22k");
   const [calc, setCalc] = useState({ grams: "1", total: "" });
 
   // 1. History Graph States
   const [days, setDays] = useState(90);
-  const [visibleLines, setVisibleLines] = useState({
+  const [visibleLines, setVisibleLines] = useState<Record<MetalKey, boolean>>({
     gold_24k: false,
     gold_22k: true,
     gold_18k: false,
@@ -72,7 +76,7 @@ export default function MetalDashboard() {
 
   const handleCalc = (field: "grams" | "total", value: string, currentRate?: number) => {
     if (!rates) return;
-    const rate = currentRate || rates[selectedMetal];
+    const rate = currentRate ?? rates[selectedMetal];
     if (field === "grams") {
       const g = parseFloat(value) || 0;
       setCalc({ grams: value, total: (g * rate).toFixed(2) });
@@ -82,19 +86,19 @@ export default function MetalDashboard() {
     }
   };
 
-  const changeMetal = (key: string) => {
+  const changeMetal = (key: MetalKey) => {
     setSelectedMetal(key);
     handleCalc("grams", calc.grams, rates?.[key]);
   };
 
-  const toggleLine = (key: string) => {
-    setVisibleLines(prev => ({ ...prev, [key as keyof typeof prev]: !prev[key as keyof typeof prev] }));
+  const toggleLine = (key: MetalKey) => {
+    setVisibleLines(prev => ({ ...prev, [key]: !prev[key] }));
   };
 
   const currentRate = rates?.[selectedMetal] ?? 0;
   const currentRateLabel = loadingRates ? "Loading..." : `₹${currentRate.toLocaleString()}/g`;
 
-  const metalOptions = [
+  const metalOptions: Array<{ key: MetalKey; label: string; purity: string; color: string }> = [
     { key: "gold_24k", label: "24K", purity: "99.9%", color: "#eab308" },
     { key: "gold_22k", label: "22K", purity: "91.6%", color: "#f97316" },
     { key: "gold_18k", label: "18K", purity: "75.0%", color: "#fbbf24" },
@@ -104,9 +108,20 @@ export default function MetalDashboard() {
   ];
 
   return (
-    <div className="flex flex-col gap-6 animate-in fade-in duration-1000 pb-20 px-4 max-w-7xl mx-auto w-full">
+    <div className="mx-auto flex w-full max-w-7xl flex-col gap-8 animate-in fade-in duration-700 pb-16">
+      <header className="flex flex-col gap-4 border-b border-white/10 pb-6 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <p className="mb-2 text-[10px] font-black uppercase tracking-[0.3em] text-orange-400">Market instrument</p>
+          <h1 className="text-3xl font-black tracking-tight text-white sm:text-4xl">Metal Terminal</h1>
+          <p className="mt-2 max-w-xl text-sm leading-6 text-zinc-500">Track live precious-metal rates, compare recent movement, and estimate value by weight.</p>
+        </div>
+        <div className="rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-left sm:text-right">
+          <span className="block text-[9px] font-black uppercase tracking-widest text-zinc-600">Pricing unit</span>
+          <strong className="mt-1 block text-sm text-zinc-300">Indian rupees / gram</strong>
+        </div>
+      </header>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
         <RateCard
           label="22K Gold"
           price={rates?.gold_22k}
@@ -126,25 +141,25 @@ export default function MetalDashboard() {
           highlight="border-cyan-500/20 bg-cyan-500/5"
         />
       </div>
-      <div className="bg-zinc-900/20 border border-white/5 rounded-[3rem] p-6 md:p-10 space-y-8">
-        <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6">
+      <section className="space-y-6 rounded-3xl border border-white/10 bg-zinc-900/25 p-4 sm:p-6 lg:p-8">
+        <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
           <div className="space-y-1">
-            <h2 className="text-xl font-black italic text-white uppercase tracking-tighter flex items-center gap-2">
+            <h2 className="flex items-center gap-2 text-xl font-black tracking-tight text-white">
               <Activity size={22} className="text-orange-500" /> Market Analytics
             </h2>
-            <p className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">Compare price trends across different intervals</p>
+            <p className="text-xs text-zinc-500">Compare price trends across different intervals.</p>
           </div>
-          <div className="flex bg-black/40 p-1 rounded-xl border border-white/5 overflow-x-auto">
+          <div className="flex w-full overflow-x-auto rounded-xl border border-white/10 bg-black/40 p-1 lg:w-auto">
             {[7, 10, 30, 60, 90].map((d) => (
               <button key={d} onClick={() => setDays(d)}
-                className={`px-4 py-1.5 rounded-lg text-[10px] font-black transition-all ${days === d ? "bg-white text-black shadow-lg" : "text-zinc-500 hover:text-zinc-300"}`}
+                className={`min-w-14 rounded-lg px-4 py-2 text-[10px] font-black transition-all ${days === d ? "bg-white text-black shadow-lg" : "text-zinc-500 hover:text-zinc-300"}`}
               >
                 {d}D
               </button>
             ))}
           </div>
         </div>
-        <div className="h-[350px] w-full bg-black/20 rounded-[2.5rem] p-4 border border-white/5 relative group">
+        <div className="relative h-[280px] w-full rounded-2xl border border-white/10 bg-black/20 p-2 sm:h-[350px] sm:p-4">
           {loadingHistory ? (
             <div className="flex h-full w-full items-center justify-center rounded-[2rem] bg-black/60 text-zinc-400 text-sm font-bold uppercase tracking-widest">
               <Loader2 className="w-8 h-8 mr-3 animate-spin" /> Loading historical market data...
@@ -169,12 +184,12 @@ export default function MetalDashboard() {
             </ResponsiveContainer>
           )}
         </div>
-        <div className="flex flex-wrap gap-2 pt-2">
+        <div className="flex flex-wrap gap-2">
           {metalOptions.map((m) => {
             const active = visibleLines[m.key as keyof typeof visibleLines];
             return (
               <button key={m.key} onClick={() => toggleLine(m.key)}
-                className={`flex items-center gap-2 px-4 py-2 rounded-full border transition-all ${active ? "bg-white/5 border-white/10 text-white" : "bg-transparent border-white/5 text-zinc-600"}`}
+                className={`flex min-h-10 items-center gap-2 rounded-full border px-4 py-2 text-xs transition-all ${active ? "border-white/15 bg-white/10 text-white" : "border-white/10 bg-transparent text-zinc-600"}`}
               >
                 <div className="w-2 h-2 rounded-full" style={{ backgroundColor: active ? m.color : '#333' }} />
                 <span className="text-[9px] font-black uppercase tracking-widest">{m.label}</span>
@@ -183,16 +198,16 @@ export default function MetalDashboard() {
             );
           })}
         </div>
-      </div>
-      <div className="bg-zinc-900/20 border border-white/5 rounded-[3rem] p-8 md:p-12 space-y-10 relative overflow-hidden">
+      </section>
+      <section className="relative space-y-8 overflow-hidden rounded-3xl border border-white/10 bg-zinc-900/25 p-5 sm:p-8 lg:p-10">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 relative z-10">
           <div className="space-y-1">
-            <h2 className="text-xl font-black italic text-white uppercase tracking-tighter flex items-center gap-2">
+            <h2 className="flex items-center gap-2 text-xl font-black tracking-tight text-white">
               <Calculator size={22} className="text-blue-500" /> Professional Estimator
             </h2>
-            <p className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">Calculated using live {selectedMetal.replace('_', ' ')} rate</p>
+            <p className="text-xs text-zinc-500">Calculated using the live {selectedMetal.replace('_', ' ')} rate.</p>
           </div>
-          <div className="flex bg-black/40 p-1.5 rounded-2xl border border-white/5 w-full md:w-auto overflow-x-auto scrollbar-hide">
+          <div className="flex w-full overflow-x-auto rounded-2xl border border-white/10 bg-black/40 p-1.5 scrollbar-hide md:w-auto">
             {metalOptions.map((opt) => (
               <button key={opt.key} onClick={() => changeMetal(opt.key)}
                 className={`flex flex-col items-center px-4 py-2 rounded-xl transition-all min-w-[70px] ${selectedMetal === opt.key ? "bg-blue-600 text-white shadow-lg shadow-blue-600/20" : "text-zinc-500 hover:text-zinc-300"}`}
@@ -203,11 +218,11 @@ export default function MetalDashboard() {
             ))}
           </div>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-11 gap-4 items-center relative z-10">
+        <div className="relative z-10 grid grid-cols-1 items-center gap-4 md:grid-cols-11">
           <div className="md:col-span-5 space-y-2">
             <label className="text-[9px] font-black text-zinc-600 uppercase ml-4 tracking-widest">Weight (Grams)</label>
             <input type="number" value={calc.grams} onChange={(e) => handleCalc("grams", e.target.value)}
-              className="w-full bg-black/40 border border-white/5 p-6 rounded-[2rem] text-2xl font-mono font-bold text-white outline-none focus:border-blue-500/40"
+              className="w-full rounded-2xl border border-white/10 bg-black/40 p-5 text-2xl font-mono font-bold text-white outline-none focus:border-blue-500/40"
             />
           </div>
           <div className="md:col-span-1 flex justify-center text-zinc-800 pt-6"><ArrowRightLeft size={24} /></div>
@@ -215,24 +230,24 @@ export default function MetalDashboard() {
             <label className="text-[9px] font-black text-zinc-600 uppercase ml-4 tracking-widest">Estimated Value (₹)</label>
             <div className="relative">
               <input type="number" value={calc.total} onChange={(e) => handleCalc("total", e.target.value)}
-                className="w-full bg-emerald-500/5 border border-emerald-500/20 p-6 rounded-[2rem] text-2xl font-mono font-bold text-emerald-400 outline-none"
+                className="w-full rounded-2xl border border-emerald-500/20 bg-emerald-500/5 p-5 text-2xl font-mono font-bold text-emerald-400 outline-none"
               />
               <TrendingUp size={20} className="absolute right-6 top-1/2 -translate-y-1/2 text-emerald-500/20" />
             </div>
           </div>
         </div>
-        <div className="p-6 bg-black/20 rounded-[2rem] border border-white/5 flex flex-col md:flex-row gap-6 justify-between">
+        <div className="flex flex-col justify-between gap-5 rounded-2xl border border-white/10 bg-black/20 p-5 sm:flex-row sm:flex-wrap">
           <InfoItem label="Current Rate" value={currentRateLabel} />
           <InfoItem label="Metal Purity" value={metalOptions.find(o => o.key === selectedMetal)?.purity || ""} />
           <InfoItem label="Typical Use" value={getUsage(selectedMetal)} />
         </div>
-      </div>
+      </section>
     </div>
   );
 }
 
 // Sub-components
-function InfoItem({ label, value }: any) {
+function InfoItem({ label, value }: { label: string; value: string }) {
   return (
     <div className="space-y-1">
       <p className="text-[8px] font-black text-zinc-600 uppercase tracking-widest">{label}</p>
@@ -241,7 +256,7 @@ function InfoItem({ label, value }: any) {
   )
 }
 
-function RateCard({ label, price, icon, percent, highlight }: any) {
+function RateCard({ label, price, percent, highlight }: { label: string; price?: number; percent: string; highlight: string }) {
   return (
     <div
       className={`relative p-5 rounded-[2rem] bg-zinc-900/60 backdrop-blur-xl border border-white/10 shadow-2xl transition-all duration-500 hover:-translate-y-1 hover:bg-zinc-800/80 hover:border-white/20 hover:shadow-white/5 group overflow-hidden ${highlight}`}

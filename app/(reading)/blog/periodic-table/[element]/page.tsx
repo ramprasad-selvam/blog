@@ -1,6 +1,7 @@
 'use client';
 
 import { use } from 'react';
+import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { notFound } from 'next/navigation';
 import { Elements } from '../elements';
@@ -11,8 +12,12 @@ export default function ElementDetail({ params }: { params: Promise<{ element: s
 
   if (!data) return notFound();
 
+  const elementIndex = Elements.elements.findIndex((item) => item.number === data.number);
+  const previous = Elements.elements[elementIndex - 1];
+  const next = Elements.elements[elementIndex + 1];
+
   return (
-    <main className="min-h-screen bg-white text-zinc-900 p-6 font-sans selection:bg-sky-100 selection:text-sky-900">
+    <main className="reading-detail min-h-screen bg-white text-zinc-900 p-3 font-sans selection:bg-sky-100 selection:text-sky-900 sm:p-6">
       <div className="max-w-[85%] mx-auto">
 
         {/* HERO SECTION */}
@@ -76,6 +81,21 @@ export default function ElementDetail({ params }: { params: Promise<{ element: s
             </div>
           </div>
         </div>
+
+        <nav aria-label="Element navigation" className="flex flex-col gap-3 border-t border-zinc-200 pt-6 pb-6 sm:flex-row sm:items-center sm:justify-between">
+          {previous ? (
+            <Link href={`/blog/periodic-table/${previous.symbol.toLowerCase()}`} className="group rounded-xl border border-zinc-200 px-4 py-3 transition hover:border-sky-400 hover:bg-sky-50">
+              <span className="block text-[9px] font-black uppercase tracking-[0.2em] text-zinc-400">Previous element</span>
+              <span className="mt-1 block text-sm font-bold text-zinc-800 group-hover:text-sky-700">{previous.number}. {previous.name} ({previous.symbol})</span>
+            </Link>
+          ) : <span />}
+          {next && (
+            <Link href={`/blog/periodic-table/${next.symbol.toLowerCase()}`} className="group rounded-xl border border-zinc-200 px-4 py-3 text-left transition hover:border-sky-400 hover:bg-sky-50 sm:text-right">
+              <span className="block text-[9px] font-black uppercase tracking-[0.2em] text-zinc-400">Next element</span>
+              <span className="mt-1 block text-sm font-bold text-zinc-800 group-hover:text-sky-700">{next.number}. {next.name} ({next.symbol})</span>
+            </Link>
+          )}
+        </nav>
       </div>
     </main>
   );
@@ -86,10 +106,10 @@ export default function ElementDetail({ params }: { params: Promise<{ element: s
 function IonizationGraph({ energies }: { energies: number[] }) {
   if (!energies || energies.length === 0) return null;
 
-  // 1. DYNAMIC SCALING LOGIC
-  // We find the max energy to ensure the tallest bar never exceeds the container
   const maxEnergy = Math.max(...energies);
-  const containerHeight = 200; // Leaving some padding for tooltips
+  const firstEnergy = energies[0];
+  const maxIndex = energies.indexOf(maxEnergy);
+  const containerHeight = 200;
 
   const getShellJumpIndex = () => {
     let maxRatio = 0;
@@ -107,45 +127,60 @@ function IonizationGraph({ energies }: { energies: number[] }) {
   const jumpAt = getShellJumpIndex();
 
   return (
-    <div className="p-10 bg-zinc-950 rounded-3xl border border-zinc-900 shadow-2xl overflow-hidden">
-      <div className="flex items-end gap-3 h-64 border-b border-zinc-800/50 pb-2">
+    <section className="ionization-panel overflow-hidden rounded-3xl border border-zinc-800 bg-zinc-950 p-5 shadow-2xl sm:p-8" aria-labelledby="ionization-title">
+      <div className="mb-8 flex flex-col gap-5 border-b border-zinc-800 pb-6 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <p className="mb-2 text-[10px] font-black uppercase tracking-[0.3em] text-sky-400">Energy sequence</p>
+          <h3 id="ionization-title" className="text-xl font-black tracking-tight text-white sm:text-2xl">Ionization energy profile</h3>
+          <p className="mt-2 max-w-xl text-xs leading-5 text-zinc-400">The energy required to remove each successive electron. A sharp rise indicates that the next electron belongs to a more tightly bound shell.</p>
+        </div>
+        <div className="grid grid-cols-2 gap-2 text-right sm:min-w-[230px]">
+          <div className="rounded-xl border border-zinc-800 bg-zinc-900/70 px-3 py-2">
+            <span className="block text-[9px] font-bold uppercase tracking-widest text-zinc-500">First electron</span>
+            <strong className="mt-1 block text-sm text-sky-300">{firstEnergy.toLocaleString()} kJ/mol</strong>
+          </div>
+          <div className="rounded-xl border border-zinc-800 bg-zinc-900/70 px-3 py-2">
+            <span className="block text-[9px] font-bold uppercase tracking-widest text-zinc-500">Highest shown</span>
+            <strong className="mt-1 block text-sm text-rose-300">{maxEnergy.toLocaleString()} kJ/mol</strong>
+          </div>
+        </div>
+      </div>
+
+      <div className="overflow-x-auto pb-2">
+      <div className="flex min-w-[560px] items-end gap-3 border-b border-zinc-800/80 pb-2 h-64">
         {energies.map((energy, i) => {
-          // 2. RATIO-BASED HEIGHT
-          // This ensures the tallest bar is always exactly containerHeight
           const height = (energy / maxEnergy) * containerHeight;
           const isCore = i > jumpAt;
 
           return (
-            <div key={i} className="flex-1 flex flex-col items-center group relative">
-              {/* Tooltip */}
-              <div className="absolute -top-12 opacity-0 group-hover:opacity-100 transition-all bg-white text-zinc-900 text-[10px] px-2 py-1 rounded font-black whitespace-nowrap z-20 shadow-xl pointer-events-none">
+            <div key={i} className="group relative flex min-w-8 flex-1 flex-col items-center" aria-label={`Electron ${i + 1}: ${energy.toLocaleString()} kilojoules per mole`}>
+              <div className="pointer-events-none absolute -top-12 z-20 whitespace-nowrap rounded-lg bg-white px-2.5 py-1.5 text-[10px] font-black text-zinc-900 opacity-0 shadow-xl transition group-hover:opacity-100">
                 {energy.toLocaleString()} kJ/mol
               </div>
 
-              {/* The Bar */}
               <motion.div
                 initial={{ height: 0 }}
-                animate={{ height: `${Math.max(height, 4)}px` }} // Min 4px so it's always visible
+                animate={{ height: `${Math.max(height, 4)}px` }}
                 transition={{ duration: 1, delay: i * 0.05, ease: [0.16, 1, 0.3, 1] }}
                 className={`w-full rounded-t-md shadow-lg ${isCore ? 'bg-rose-500 shadow-rose-500/20' : 'bg-sky-500 shadow-sky-500/20'
                   }`}
               />
 
-              <span className={`text-[9px] mt-4 font-black uppercase tracking-tighter ${isCore ? 'text-rose-400' : 'text-sky-400'}`}>
+              <span className={`mt-4 text-[9px] font-black uppercase tracking-tighter ${isCore ? 'text-rose-400' : 'text-sky-400'}`}>
                 e⁻{i + 1}
               </span>
 
-              {/* Jump Divider */}
               {i === jumpAt && energies.length > 1 && (
-                <div className="absolute -right-[7px] bottom-8 w-px h-64 border-r border-dashed border-zinc-800" />
+                <div className="absolute -right-[7px] bottom-8 h-64 w-px border-r border-dashed border-rose-400/60" aria-hidden="true" />
               )}
             </div>
           );
         })}
       </div>
+      </div>
 
-      <div className="mt-8 flex justify-between items-center">
-        <div className="flex gap-6">
+      <div className="mt-7 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex flex-wrap gap-4">
           <div className="flex items-center gap-2">
             <div className="w-2 h-2 bg-sky-500 rounded-full" />
             <span className="text-[9px] font-bold text-zinc-500 uppercase tracking-widest">Valence</span>
@@ -157,11 +192,10 @@ function IonizationGraph({ energies }: { energies: number[] }) {
             </div>
           )}
         </div>
-        <p className="text-[9px] text-zinc-600 font-black uppercase tracking-widest">
-          Scale: Linear_Relative
-        </p>
+        <p className="text-[9px] font-black uppercase tracking-widest text-zinc-500">Scale: relative linear</p>
       </div>
-    </div>
+      {jumpAt !== -1 && <p className="mt-5 rounded-xl border border-rose-500/20 bg-rose-500/5 px-4 py-3 text-xs leading-5 text-zinc-400"><strong className="text-rose-300">Shell jump after e⁻{jumpAt + 1}.</strong> The next electron requires substantially more energy, revealing a new inner shell boundary.</p>}
+    </section>
   );
 }
 function AtomicModel({ protons, shells }: { protons: number; shells: number[] }) {

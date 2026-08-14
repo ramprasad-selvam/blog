@@ -3,8 +3,10 @@
 import { useState, useEffect, useRef } from "react";
 import { 
   Calculator, Percent, Calendar, Banknote, 
-  RefreshCcw, Zap, PieChart, TrendingUp 
+  Zap, PieChart
 } from "lucide-react";
+
+const formatINR = (value: number) => `₹${value.toLocaleString("en-IN", { maximumFractionDigits: 0 })}`;
 
 export default function LoanSolver() {
   const [values, setValues] = useState({
@@ -85,34 +87,35 @@ export default function LoanSolver() {
   };
 
   return (
-    <div className="flex flex-col gap-8 animate-in fade-in duration-700 pb-20">
+    <div className="mx-auto flex w-full max-w-7xl flex-col gap-8 animate-in fade-in duration-700 pb-16">
       
       {/* Header HUD */}
-      <div className="bg-zinc-900/40 border border-white/5 p-8 rounded-[2.5rem] flex flex-col md:flex-row justify-between items-center gap-6">
+      <header className="flex flex-col gap-5 border-b border-white/10 pb-6 sm:flex-row sm:items-end sm:justify-between">
         <div className="space-y-1">
-          <h1 className="text-2xl font-black italic text-white uppercase tracking-tighter">Live Solver</h1>
-          <p className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest flex items-center gap-2">
+          <p className="text-[10px] font-black uppercase tracking-[0.3em] text-blue-400">Financial utility</p>
+          <h1 className="text-3xl font-black tracking-tight text-white sm:text-4xl">Loan Solver</h1>
+          <p className="flex items-center gap-2 text-sm text-zinc-500">
             <Zap size={10} className="text-emerald-500" />
-            Auto-calculating {stats.solvingFor === "EMI" ? "Interest Rate" : "Monthly EMI"}
+            Auto-solving {stats.solvingFor === "EMI" ? "interest rate" : "monthly EMI"}
           </p>
         </div>
         
-        <div className="flex gap-4">
-          <div className="bg-black/40 border border-white/5 px-6 py-4 rounded-3xl text-center min-w-[140px]">
-            <p className="text-[8px] font-black text-zinc-600 uppercase mb-1">Interest Cost</p>
-            <p className="text-xl font-bold text-orange-400 font-mono">₹ {stats.totalInterest.toLocaleString(undefined, {maximumFractionDigits: 0})}</p>
+        <div className="grid grid-cols-2 gap-3 sm:min-w-[320px]">
+          <div className="rounded-2xl border border-orange-500/20 bg-orange-500/5 px-4 py-3 text-left">
+            <p className="text-[9px] font-black uppercase tracking-widest text-zinc-500">Interest cost</p>
+            <p className="mt-1 text-lg font-bold text-orange-400 font-mono">{formatINR(stats.totalInterest)}</p>
           </div>
-          <div className="bg-black/40 border border-white/5 px-6 py-4 rounded-3xl text-center min-w-[140px]">
-            <p className="text-[8px] font-black text-zinc-600 uppercase mb-1">Total Payback</p>
-            <p className="text-xl font-bold text-blue-400 font-mono">₹ {stats.totalPayment.toLocaleString(undefined, {maximumFractionDigits: 0})}</p>
+          <div className="rounded-2xl border border-blue-500/20 bg-blue-500/5 px-4 py-3 text-left">
+            <p className="text-[9px] font-black uppercase tracking-widest text-zinc-500">Total payback</p>
+            <p className="mt-1 text-lg font-bold text-blue-400 font-mono">{formatINR(stats.totalPayment)}</p>
           </div>
         </div>
-      </div>
+      </header>
 
       <div className="grid grid-cols-1 xl:grid-cols-12 gap-8">
         
         {/* Input Controls */}
-        <div className="xl:col-span-5 bg-zinc-900/20 border border-white/5 rounded-[3rem] p-10 space-y-8">
+        <section className="xl:col-span-5 space-y-7 rounded-3xl border border-white/10 bg-zinc-900/25 p-5 sm:p-8">
           <div className="space-y-6">
             <SolverInput label="Loan Amount" icon={<Banknote size={18}/>} value={values.amount} onChange={(v:string) => handleManualInput("amount", v)} />
             <SolverInput label="Tenure (Months)" icon={<Calendar size={18}/>} value={values.tenure} onChange={(v:string) => handleManualInput("tenure", v)} />
@@ -120,7 +123,7 @@ export default function LoanSolver() {
             <div className="h-px bg-white/5 my-4" />
 
             <SolverInput 
-              label="Interest Rate (%)" 
+              label="Annual Interest Rate (%)"
               icon={<Percent size={18}/>} 
               value={values.rate} 
               onChange={(v:string) => handleManualInput("rate", v)} 
@@ -135,11 +138,11 @@ export default function LoanSolver() {
               isAuto={lastChanged.current === "rate"} 
             />
           </div>
-        </div>
+        </section>
 
         {/* Visual Analysis */}
         <div className="xl:col-span-7 flex flex-col gap-6">
-          <div className="bg-zinc-900/40 border border-white/5 p-10 rounded-[3rem] space-y-10 flex-grow relative overflow-hidden">
+          <div className="flex-grow space-y-8 rounded-3xl border border-white/10 bg-zinc-900/25 p-5 sm:p-8">
             <div className="flex items-center gap-3">
               <PieChart size={18} className="text-zinc-500" />
               <span className="text-[10px] font-black uppercase tracking-widest text-zinc-500">Repayment Distribution</span>
@@ -148,17 +151,17 @@ export default function LoanSolver() {
             
             
             <div className="space-y-8 relative z-10">
-              <div className="h-4 w-full bg-zinc-800 rounded-full flex overflow-hidden border border-white/5">
+              <div className="flex h-4 w-full overflow-hidden rounded-full border border-white/10 bg-zinc-800">
                 <div style={{ width: `${stats.principalPercent}%` }} className="h-full bg-emerald-500 transition-all duration-700" />
                 <div style={{ width: `${100 - stats.principalPercent}%` }} className="h-full bg-orange-500 transition-all duration-700" />
               </div>
 
               <div className="grid grid-cols-2 gap-4">
-                 <div className="p-6 bg-black/40 rounded-3xl border border-white/5 text-center">
+                 <div className="rounded-2xl border border-white/10 bg-black/30 p-5 text-center">
                     <p className="text-[9px] font-black text-zinc-600 uppercase mb-2">Principal</p>
                     <p className="text-3xl font-black text-emerald-500">{stats.principalPercent.toFixed(1)}%</p>
                  </div>
-                 <div className="p-6 bg-black/40 rounded-3xl border border-white/5 text-center">
+                 <div className="rounded-2xl border border-white/10 bg-black/30 p-5 text-center">
                     <p className="text-[9px] font-black text-zinc-600 uppercase mb-2">Interest</p>
                     <p className="text-3xl font-black text-orange-500">{(100 - stats.principalPercent).toFixed(1)}%</p>
                  </div>

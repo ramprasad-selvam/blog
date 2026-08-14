@@ -126,14 +126,20 @@ export default function ImageStudio() {
   };
 
   return (
-    <div className="min-h-full bg-zinc-950 p-6 md:p-12 rounded-[4rem] flex flex-col xl:flex-row gap-10 text-white font-sans">
+    <div className="mx-auto flex min-h-full w-full max-w-7xl flex-col gap-8 text-white font-sans">
       
       {/* Sidebar Controls */}
-      <div className="w-full xl:w-[400px] space-y-8 bg-zinc-900/40 p-10 rounded-[3rem] border border-white/5 h-fit shadow-2xl">
-        <div className="space-y-1">
-          <h1 className="text-2xl font-black uppercase tracking-tighter italic">Studio Asset</h1>
-          <p className="text-[10px] font-bold text-zinc-500 tracking-widest uppercase tracking-[0.2em]">Image & Gradient Engine</p>
+      <header className="flex flex-col gap-5 border-b border-white/10 pb-6 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <p className="mb-2 text-[10px] font-black uppercase tracking-[0.3em] text-fuchsia-400">Creative utility</p>
+          <h1 className="flex items-center gap-3 text-3xl font-black tracking-tight sm:text-4xl"><ImageIcon className="text-fuchsia-400" /> Asset Creator</h1>
+          <p className="mt-2 text-sm text-zinc-500">Create gradients, generate images, and export production-ready assets.</p>
         </div>
+        <span className="rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-[10px] font-black uppercase tracking-widest text-zinc-500">Canvas / cloud</span>
+      </header>
+
+      <div className="grid grid-cols-1 gap-5 xl:grid-cols-[360px_1fr]">
+      <div className="w-full space-y-7 rounded-3xl border border-white/10 bg-zinc-900/35 p-5 shadow-2xl sm:p-7">
 
         {/* Resolution Control */}
         <div className="space-y-4">
@@ -144,7 +150,8 @@ export default function ImageStudio() {
                 <button 
                   key={p.name} 
                   onClick={() => setOptions({...options, width: p.w, height: p.h})} 
-                  className="p-2 bg-zinc-800 rounded-lg hover:bg-zinc-700 transition-all text-zinc-400 hover:text-white"
+                  aria-label={`Use ${p.name} preset`}
+                  className="rounded-lg border border-white/10 bg-zinc-800 p-2 text-zinc-400 transition-all hover:bg-zinc-700 hover:text-white"
                 >
                   {p.icon}
                 </button>
@@ -154,28 +161,28 @@ export default function ImageStudio() {
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1">
               <span className="text-[8px] font-bold text-zinc-600 uppercase ml-1">Width</span>
-              <input type="number" value={options.width} onChange={(e) => setOptions({...options, width: Number(e.target.value)})} className="w-full bg-zinc-800/40 border border-white/5 p-4 rounded-xl text-xs font-mono outline-none focus:ring-1 ring-blue-500" />
+              <input type="number" value={options.width} onChange={(e) => setOptions({...options, width: Number(e.target.value)})} className="w-full rounded-xl border border-white/10 bg-black/30 p-3 text-xs font-mono outline-none focus:ring-1 ring-blue-500" />
             </div>
             <div className="space-y-1">
               <span className="text-[8px] font-bold text-zinc-600 uppercase ml-1">Height</span>
-              <input type="number" value={options.height} onChange={(e) => setOptions({...options, height: Number(e.target.value)})} className="w-full bg-zinc-800/40 border border-white/5 p-4 rounded-xl text-xs font-mono outline-none focus:ring-1 ring-blue-500" />
+              <input type="number" value={options.height} onChange={(e) => setOptions({...options, height: Number(e.target.value)})} className="w-full rounded-xl border border-white/10 bg-black/30 p-3 text-xs font-mono outline-none focus:ring-1 ring-blue-500" />
             </div>
           </div>
         </div>
 
         {/* Source Toggle */}
-        <div className="flex bg-zinc-800/50 p-1.5 rounded-2xl border border-white/5">
-          <button onClick={() => setOptions({...options, sourceMode: 'canvas'})} className={`flex-1 py-3 rounded-xl text-[10px] font-black transition-all ${options.sourceMode === 'canvas' ? 'bg-zinc-700 text-white shadow-md' : 'text-zinc-500'}`}>LOCAL CANVAS</button>
-          <button onClick={() => { setOptions({...options, sourceMode: 'online'}); updateOnlineSource(); }} className={`flex-1 py-3 rounded-xl text-[10px] font-black transition-all ${options.sourceMode === 'online' ? 'bg-zinc-700 text-white shadow-md' : 'text-zinc-500'}`}>CLOUD SOURCE</button>
+        <div className="flex rounded-xl border border-white/10 bg-black/30 p-1">
+          <button onClick={() => setOptions({...options, sourceMode: 'canvas'})} className={`flex-1 rounded-lg py-2.5 text-[10px] font-black transition-all ${options.sourceMode === 'canvas' ? 'bg-blue-600 text-white shadow-md' : 'text-zinc-500'}`}>LOCAL CANVAS</button>
+          <button onClick={() => { setOptions({...options, sourceMode: 'online'}); updateOnlineSource(); }} className={`flex-1 rounded-lg py-2.5 text-[10px] font-black transition-all ${options.sourceMode === 'online' ? 'bg-blue-600 text-white shadow-md' : 'text-zinc-500'}`}>CLOUD SOURCE</button>
         </div>
 
         {/* Dynamic Context Controls */}
         <div className="min-h-[140px]">
           {options.sourceMode === 'canvas' ? (
             <div className="space-y-6 animate-in fade-in duration-300">
-               <div className="flex bg-zinc-800/30 p-1.5 rounded-xl border border-white/5 gap-2">
-                <button onClick={() => setOptions({...options, styleMode: 'flat'})} className={`flex-1 py-2 rounded-lg text-[9px] font-black ${options.styleMode === 'flat' ? 'bg-zinc-700 text-white' : 'text-zinc-500'}`}>FLAT</button>
-                <button onClick={() => setOptions({...options, styleMode: 'gradient'})} className={`flex-1 py-2 rounded-lg text-[9px] font-black ${options.styleMode === 'gradient' ? 'bg-zinc-700 text-white' : 'text-zinc-500'}`}>GRADIENT</button>
+              <div className="flex gap-2 rounded-xl border border-white/10 bg-black/20 p-1">
+                <button onClick={() => setOptions({...options, styleMode: 'flat'})} className={`flex-1 rounded-lg py-2 text-[9px] font-black ${options.styleMode === 'flat' ? 'bg-zinc-700 text-white' : 'text-zinc-500'}`}>FLAT</button>
+                <button onClick={() => setOptions({...options, styleMode: 'gradient'})} className={`flex-1 rounded-lg py-2 text-[9px] font-black ${options.styleMode === 'gradient' ? 'bg-zinc-700 text-white' : 'text-zinc-500'}`}>GRADIENT</button>
                 <button 
                    onClick={randomizeGradient} 
                    title="Random Gradient"
@@ -196,9 +203,31 @@ export default function ImageStudio() {
                   </div>
                 )}
               </div>
+              {options.styleMode === 'gradient' && (
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <label htmlFor="gradient-angle" className="text-[9px] font-black uppercase tracking-widest text-zinc-500">Gradient angle</label>
+                    <span className="rounded-md bg-blue-500/10 px-2 py-1 text-[10px] font-bold text-blue-400">{options.angle}°</span>
+                  </div>
+                  <input
+                    id="gradient-angle"
+                    type="range"
+                    min="0"
+                    max="360"
+                    value={options.angle}
+                    onChange={(e) => setOptions({...options, angle: Number(e.target.value)})}
+                    className="w-full accent-blue-500"
+                  />
+                  <div className="flex justify-between text-[8px] font-bold uppercase tracking-widest text-zinc-600">
+                    <span>0°</span>
+                    <span>180°</span>
+                    <span>360°</span>
+                  </div>
+                </div>
+              )}
             </div>
           ) : (
-            <button onClick={updateOnlineSource} disabled={isFetching} className="w-full py-8 bg-zinc-800 hover:bg-zinc-700 rounded-[2rem] border border-white/5 flex flex-col items-center gap-3 group transition-all">
+            <button onClick={updateOnlineSource} disabled={isFetching} className="group flex w-full flex-col items-center gap-3 rounded-2xl border border-white/10 bg-zinc-800 py-7 transition-all hover:bg-zinc-700 disabled:opacity-50">
               <RefreshCw className={`text-blue-400 ${isFetching ? 'animate-spin' : 'group-hover:rotate-180 transition-transform duration-500'}`} size={24} />
               <span className="text-[10px] font-black uppercase tracking-widest">{isFetching ? 'Fetching Cloud...' : 'Shuffle Cloud Image'}</span>
             </button>
@@ -206,7 +235,7 @@ export default function ImageStudio() {
         </div>
 
         {/* Instant Export HUD */}
-        <div className="space-y-4 pt-8 border-t border-white/5">
+        <div className="space-y-4 border-t border-white/10 pt-6">
           <label className="text-[10px] font-black text-zinc-500 uppercase tracking-[0.2em] flex items-center gap-2">
             <ArrowDownToLine size={12} /> Instant Export
           </label>
@@ -234,22 +263,22 @@ export default function ImageStudio() {
       </div>
 
       {/* Main Preview & Code Area */}
-      <div className="flex-grow flex flex-col items-center justify-center">
-        <div className="w-full flex-grow bg-zinc-900/20 border border-white/5 rounded-[4rem] p-12 flex flex-col items-center justify-center relative bg-grid-white/[0.02] overflow-hidden">
-          <div className="absolute top-10 left-12 flex items-center gap-3 text-zinc-800">
+      <div className="flex min-w-0 flex-col gap-5">
+        <div className="relative flex min-h-[420px] w-full flex-grow flex-col items-center justify-center overflow-hidden rounded-3xl border border-white/10 bg-zinc-900/20 p-5 sm:p-8">
+          <div className="absolute left-6 top-6 flex items-center gap-3 text-zinc-600">
              <ImageIcon size={20} />
              <span className="text-[10px] font-black uppercase tracking-[0.4em]">Asset Viewport</span>
           </div>
 
-          <div className="w-full max-w-4xl aspect-video rounded-[3rem] overflow-hidden shadow-[0_0_80px_rgba(0,0,0,0.5)] border border-white/5 bg-zinc-950 flex items-center justify-center">
+          <div className="flex aspect-video w-full max-w-4xl items-center justify-center overflow-hidden rounded-2xl border border-white/10 bg-zinc-950 shadow-[0_0_80px_rgba(0,0,0,0.5)] sm:rounded-3xl">
              <canvas ref={canvasRef} className="max-w-full max-h-full object-contain" />
           </div>
         </div>
 
         {/* Real-time Code Component */}
         {options.sourceMode === 'canvas' && options.styleMode === 'gradient' && (
-          <div className="mt-8 w-full max-w-2xl animate-in slide-in-from-bottom-4 duration-500">
-            <div className="bg-zinc-900/80 border border-white/10 rounded-2xl p-5 flex items-center justify-between group shadow-xl">
+          <div className="w-full animate-in slide-in-from-bottom-4 duration-500">
+            <div className="group flex items-center justify-between gap-4 rounded-2xl border border-white/10 bg-zinc-900/80 p-4 shadow-xl sm:p-5">
               <div className="flex items-center gap-4 overflow-hidden">
                 <div className="p-2.5 bg-blue-500/10 rounded-xl text-blue-400">
                   <FileJson size={18} />
@@ -274,6 +303,7 @@ export default function ImageStudio() {
             </div>
           </div>
         )}
+      </div>
       </div>
     </div>
   );
