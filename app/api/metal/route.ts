@@ -6,7 +6,6 @@ export async function GET() {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
       }
     });
 
@@ -16,7 +15,6 @@ export async function GET() {
 
     const payload = await response.json();
     const prices = payload.data?.prices;
-
     if (!prices) {
       return NextResponse.json(
         { success: false, error: `No data found.` },
@@ -27,12 +25,10 @@ export async function GET() {
       success: true,
       data: {
         rates: {
-          gold_14k: +(prices.gold.price * 0.6364).toFixed(2),
-          gold_18k: +(prices.gold.price * 0.8182).toFixed(2),
-          gold_22k: +prices.gold.price.toFixed(2),
-          gold_24k: +(prices.gold.price * 1.0909).toFixed(2),
-          silver: +prices.silver.price.toFixed(2),
-          platinum: +prices.platinum.price.toFixed(2),
+          gold_24k: prices.gold_24kt.price,
+          gold_22k: prices.gold_22kt.price,
+          silver: prices.silver.price,
+          platinum: prices.platinum.price,
         }
       }
     });
