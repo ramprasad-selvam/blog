@@ -5,7 +5,7 @@ import { unstable_cache } from 'next/cache';
 const getCachedMetals = unstable_cache(
   async () => {
     const { rows } = await sql`
-      SELECT date, gold_24k, gold_22k, gold_18k, gold_14k, platinum, silver 
+      SELECT date, gold_24k, gold_22k, platinum, silver 
       FROM precious_metals 
       ORDER BY date ASC
     `;
