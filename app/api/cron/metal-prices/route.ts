@@ -20,13 +20,11 @@ export async function GET(request: Request) {
     console.log("Fetched Rates:", rates);
 
     const result = await sql`
-      INSERT INTO precious_metals (date, gold_24k, gold_22k, gold_18k, gold_14k, platinum, silver)
-      VALUES (CURRENT_DATE, ${rates.gold_24k}, ${rates.gold_22k}, ${rates.gold_18k}, ${rates.gold_14k}, ${rates.platinum}, ${rates.silver})
+      INSERT INTO precious_metals (date, gold_24k, gold_22k, platinum, silver)
+      VALUES (CURRENT_DATE, ${rates.gold_24k}, ${rates.gold_22k}, ${rates.platinum}, ${rates.silver})
       ON CONFLICT (date) DO UPDATE SET 
         gold_24k = EXCLUDED.gold_24k,
         gold_22k = EXCLUDED.gold_22k,
-        gold_18k = EXCLUDED.gold_18k,
-        gold_14k = EXCLUDED.gold_14k,
         platinum = EXCLUDED.platinum,
         silver = EXCLUDED.silver
       RETURNING *;
