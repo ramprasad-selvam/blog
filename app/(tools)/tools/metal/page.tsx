@@ -10,7 +10,7 @@ import {
   ResponsiveContainer, CartesianGrid
 } from 'recharts';
 
-type MetalKey = 'gold_24k' | 'gold_22k' | 'gold_18k' | 'gold_14k' | 'platinum' | 'silver';
+type MetalKey = 'gold_24k' | 'gold_22k' | 'platinum' | 'silver';
 type Rates = Record<MetalKey, number>;
 type HistoryRow = Rates & { date: string };
 
@@ -27,8 +27,6 @@ export default function MetalDashboard() {
   const [visibleLines, setVisibleLines] = useState<Record<MetalKey, boolean>>({
     gold_24k: false,
     gold_22k: true,
-    gold_18k: false,
-    gold_14k: false,
     platinum: false,
     silver: false,
   });
@@ -101,8 +99,6 @@ export default function MetalDashboard() {
   const metalOptions: Array<{ key: MetalKey; label: string; purity: string; color: string }> = [
     { key: "gold_24k", label: "24K", purity: "99.9%", color: "#eab308" },
     { key: "gold_22k", label: "22K", purity: "91.6%", color: "#f97316" },
-    { key: "gold_18k", label: "18K", purity: "75.0%", color: "#fbbf24" },
-    { key: "gold_14k", label: "14K", purity: "58.5%", color: "#d97706" },
     { key: "platinum", label: "Plat", purity: "95.0%", color: "#94a3b8" },
     { key: "silver", label: "Silv", purity: "92.5%", color: "#cbd5e1" },
   ];
@@ -284,8 +280,6 @@ function getUsage(key: string) {
   const usages: any = {
     gold_24k: "Bars/Coins",
     gold_22k: "Jewelry",
-    gold_18k: "Stone Settings",
-    gold_14k: "Watch/Daily Wear",
     platinum: "Premium Bands",
     silver: "Articles/Utensils"
   };
